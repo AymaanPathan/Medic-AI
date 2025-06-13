@@ -1,10 +1,18 @@
 from langgraph.graph import StateGraph, END
-from chat_state import ChatState
+from chat.chat_state import ChatState
 from langgraph.types import Command
 import json
-from qa_chain import qa_chain
-from get_more_question_chain import generate_more_question_chain
+from chat.qa_chain import qa_chain
+from chat.get_more_question_chain import generate_more_question_chain
 from langgraph.checkpoint.memory import MemorySaver
+# Fast Api setup
+from fastapi import FastAPI
+app = FastAPI()
+
+# Test Route
+app.get('/')
+async def test():
+    return {"message": "Hello World"}
 
 memory = MemorySaver()
 
