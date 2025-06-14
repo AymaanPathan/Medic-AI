@@ -16,7 +16,7 @@ const SymptomSection: React.FC<SymptomSectionProps> = ({
   onNext,
 }) => (
   <div className="w-full min-h-screen flex items-center justify-center p-4">
-    <Card className="w-full max-w-2xl">
+    <Card className="w-full max-w-md mx-auto shadow-xl bg-gray-900 border border-gray-700">
       <CardHeader className="text-center">
         <div className="flex justify-center mb-4">
           <div className="p-3 bg-blue-600/20 rounded-full">

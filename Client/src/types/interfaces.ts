@@ -40,6 +40,11 @@ export interface SymptomSectionProps {
   onNext: () => void;
 }
 
+export interface FollowUpSectionProps {
+  onBack: () => void;
+  onNext: () => void;
+}
+
 export interface PersonalInfoSectionProps {
   age: string;
   setAge: (age: string) => void;
