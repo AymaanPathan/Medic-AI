@@ -22,7 +22,7 @@ def chat(state: ChatState) -> Command:
         print("[chat node] No symptoms_input provided. Ending flow.")
         return Command(update={"error": "No symptoms provided"}, goto=END)
 
-    symptoms = [symptoms_input.strip()]
+    symptoms = symptoms_input.strip()
     print("[chat node] Parsed symptoms:", symptoms)
 
     return Command(
