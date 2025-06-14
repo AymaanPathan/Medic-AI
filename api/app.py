@@ -1,10 +1,21 @@
 from fastapi import FastAPI
-from api.State import InitInput, UserInfoInput, FollowupInput, FollowupAnswers, DiagnosisInput
+from api.State import InitInput, FollowupInput, FollowupAnswers, DiagnosisInput, UserInfoInput
 from chat.chat_graph import compiled_graph
 from chat.get_more_question_chain import generate_more_question_chain
 from chat.qa_chain import qa_chain
-
+from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
+origins = [
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get('/')
 async def test():
@@ -27,7 +38,10 @@ async def getInfo(data: UserInfoInput):
 # 3 LLM generate more question
 @app.post("/generate_followUp")
 async def generate_follow_up(data: FollowupInput):
-    state = data.userSymptoms
+    state = {
+        "user_info":data.user_info,
+        "userSymptoms":data.userSymptoms
+    }
     llm_output = generate_more_question_chain.invoke(state)
 
     questions = [

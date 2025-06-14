@@ -13,6 +13,7 @@ class UserInfoInput(BaseModel):
 
 class FollowupInput(BaseModel):
     session_id: str
+    user_info: str
     userSymptoms: str
 
 class FollowupAnswers(BaseModel):
