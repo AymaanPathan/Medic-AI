@@ -20,6 +20,13 @@ class FollowupAnswers(BaseModel):
     session_id: str
     user_response: Dict[str, str]
 
+class FinalPromptInput(BaseModel):
+    session_id: str
+    userSymptoms: List[str]
+    user_info: str
+    formatted_response: str
+    followupQuestions: List[str]   
+
 class DiagnosisInput(BaseModel):
     session_id: str
     finalPrompt: str

@@ -1,9 +1,11 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { IChat } from "../../models/chat";
 import {
+  generateFinalPrompt,
   generateFollowUp,
   getUserPersonalInfo,
   getUserSymptoms,
+  submitFollowupAnswers,
 } from "../../api/chat.api";
 
 const initialState: IChat = {
@@ -64,6 +66,49 @@ export const generatefollowUpQuestion = createAsyncThunk(
   }
 );
 
+// 4. Submit answers to follow-up questions
+export const submitFollowupAnswersThunk = createAsyncThunk(
+  "chat/submitFollowupAnswers",
+  async ({
+    sessionId,
+    user_response,
+  }: {
+    sessionId: string;
+    user_response: Record<string, string>;
+  }) => {
+    const response = await submitFollowupAnswers(sessionId, user_response);
+    console.log("Response from submitFollowupAnswers:", response);
+    return { user_response, formatted_response: response.formatted_response };
+  }
+);
+
+export const generateFinalPromptThunk = createAsyncThunk(
+  "chat/generateFinalPrompt",
+  async ({
+    sessionId,
+    userSymptoms,
+    user_info,
+    formatted_response,
+    followupQuestions,
+  }: {
+    sessionId: string;
+    userSymptoms: string[];
+    user_info: string;
+    formatted_response: string;
+    followupQuestions: string[];
+  }) => {
+    const response = await generateFinalPrompt(
+      sessionId,
+      userSymptoms,
+      user_info,
+      formatted_response,
+      followupQuestions
+    );
+    console.log("Response from generateFinalPrompt:", response);
+    return { finalPrompt: response.finalPrompt };
+  }
+);
+
 const chatSlice = createSlice({
   name: "chat",
   initialState,
@@ -93,14 +138,21 @@ const chatSlice = createSlice({
         console.log("Generating follow-up questions...");
       })
       .addCase(generatefollowUpQuestion.fulfilled, (state, action) => {
-        state.user_info = state.user_info || action.payload.user_info;
-        state.userSymptoms = action.payload.userSymptoms;
+        state.followupQuestions = action.payload.followupQuestions;
       })
       .addCase(generatefollowUpQuestion.rejected, (state, action) => {
         console.error(
           "Failed to generate follow-up questions:",
           action.error.message
         );
+      })
+      .addCase(submitFollowupAnswersThunk.fulfilled, (state, action) => {
+        state.user_response = action.payload.user_response;
+        // Store formatted response in state temporarily (for prompt generation)
+        state.finalPrompt = action.payload.formatted_response;
+      })
+      .addCase(generateFinalPromptThunk.fulfilled, (state, action) => {
+        state.finalPrompt = action.payload.finalPrompt;
       });
   },
 });

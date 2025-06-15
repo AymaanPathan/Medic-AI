@@ -7,11 +7,7 @@ import { useDispatch } from "react-redux";
 import type { RootDispatch } from "../store";
 import { AnimatePresence, motion } from "framer-motion";
 
-import {
-  generatefollowUpQuestion,
-  getPersonalInfo,
-  startChat,
-} from "../store/slices/chatSlice";
+import { getPersonalInfo, startChat } from "../store/slices/chatSlice";
 
 const Chat: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(0);
@@ -34,7 +30,6 @@ const Chat: React.FC = () => {
       setCurrentStep(currentStep + 1);
     }
   };
-  console.log("Current Step:", currentStep);
 
   const prevStep = (): void => {
     if (currentStep > 0) {
@@ -63,7 +58,7 @@ const Chat: React.FC = () => {
       onNext={nextStep}
       onBack={prevStep}
     />,
-    <FollowUpSection onNext={nextStep} onBack={prevStep} />,
+    <FollowUpSection />,
     <ThankYouSection onRestart={restart} />,
   ];
 

@@ -1,537 +1,231 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { ChevronLeft, Check, ArrowRight } from "lucide-react";
+import type { RootDispatch, RootState } from "../../store";
 import {
-  Brain,
-  ChevronLeft,
-  CheckCircle2,
-  Loader2,
-  Send,
-  Bot,
-  User,
-  ChevronRight,
-} from "lucide-react";
-import type { FollowUpSectionProps } from "../../types/interfaces";
-import type { RootDispatch } from "../../store";
-import { useDispatch } from "react-redux";
-import { generatefollowUpQuestion } from "../../store/slices/chatSlice";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../store";
-// TypeScript interfaces
-interface LLMQuestion {
-  id: number;
-  question: string;
-  isAnswered: boolean;
-}
+  generateFinalPromptThunk,
+  generatefollowUpQuestion,
+  submitFollowupAnswersThunk,
+} from "../../store/slices/chatSlice";
 
-interface Answer {
-  questionId: number;
-  question: string;
-  answer: string;
-}
+const FollowUpSection: React.FC = () => {
+  const [current, setCurrent] = useState(0);
+  const dispatch: RootDispatch = useDispatch();
+  const [questionAnswers, setQuestionAnswers] = useState({});
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  children: React.ReactNode;
-  className?: string;
-  variant?: "default" | "outline" | "ghost";
-  size?: "sm" | "md" | "lg";
-}
+  const user_info = useSelector((state: RootState) => state.chat.user_info);
+  const userSymptoms = useSelector(
+    (state: RootState) => state.chat.userSymptoms
+  );
+  const questions = useSelector(
+    (state: RootState) => state.chat.followupQuestions
+  );
 
-interface CardProps {
-  children: React.ReactNode;
-  className?: string;
-}
+  const [answers, setAnswers] = useState<string[]>(
+    Array(questions.length).fill("")
+  );
 
-// Button Component
-const Button: React.FC<ButtonProps> = ({
-  children,
-  className = "",
-  variant = "default",
-  size = "md",
-  ...props
-}) => {
-  const baseClasses =
-    "inline-flex items-center justify-center rounded-md font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:pointer-events-none";
-
-  const variants = {
-    default:
-      "bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl transform hover:scale-105",
-    outline:
-      "border border-gray-700 bg-transparent text-white hover:bg-gray-800",
-    ghost: "text-gray-300 hover:bg-gray-800 hover:text-white",
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const updated = [...answers];
+    updated[current] = e.target.value;
+    setAnswers(updated);
   };
 
-  const sizes = {
-    sm: "h-8 px-3 text-sm",
-    md: "h-10 px-4 text-sm",
-    lg: "h-12 px-6 text-base",
-  };
+  const handleNext = () => {
+    const currentQuestion = questions[current];
+    const currentAnswer = answers[current];
 
-  return (
-    <button
-      className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
+    questionAnswersCollection(currentQuestion, currentAnswer);
 
-// Card Component
-const Card: React.FC<CardProps> = ({ children, className = "" }) => (
-  <div
-    className={`rounded-lg border border-gray-800 bg-gray-900/50 backdrop-blur shadow-xl ${className}`}
-  >
-    {children}
-  </div>
-);
-
-// Loading Component
-const LoadingAnalysis: React.FC = () => {
-  const [loadingText, setLoadingText] = useState("Analyzing your symptoms...");
-
-  useEffect(() => {
-    const texts = [
-      "Analyzing your symptoms...",
-      "Processing medical data...",
-      "Generating personalized questions...",
-      "Preparing assessment...",
-    ];
-
-    let index = 0;
-    const interval = setInterval(() => {
-      setLoadingText(texts[index]);
-      index = (index + 1) % texts.length;
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6">
-      <div className="relative">
-        <div className="w-20 h-20 border-4 border-blue-600/30 rounded-full"></div>
-        <div className="absolute top-0 left-0 w-20 h-20 border-4 border-transparent border-t-blue-600 rounded-full animate-spin"></div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Brain className="w-8 h-8 text-blue-400" />
-        </div>
-      </div>
-
-      <div className="text-center space-y-2">
-        <h3 className="text-xl font-semibold text-white">{loadingText}</h3>
-        <p className="text-gray-400 text-sm">
-          Our AI is preparing targeted questions for you
-        </p>
-      </div>
-
-      <div className="flex space-x-1">
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"
-            style={{ animationDelay: `${i * 0.2}s` }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// Chat Message Component
-const ChatMessage: React.FC<{
-  message: string;
-  isBot: boolean;
-  isTyping?: boolean;
-}> = ({ message, isBot, isTyping = false }) => {
-  return (
-    <div
-      className={`flex items-start space-x-3 ${
-        isBot ? "" : "flex-row-reverse space-x-reverse"
-      }`}
-    >
-      <div
-        className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-          isBot ? "bg-blue-600/20" : "bg-purple-600/20"
-        }`}
-      >
-        {isBot ? (
-          <Bot className="w-4 h-4 text-blue-400" />
-        ) : (
-          <User className="w-4 h-4 text-purple-400" />
-        )}
-      </div>
-      <div
-        className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
-          isBot ? "bg-gray-800/70 text-white" : "bg-blue-600 text-white ml-auto"
-        }`}
-      >
-        {isTyping ? (
-          <div className="flex space-x-1">
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-            <div
-              className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-              style={{ animationDelay: "0.1s" }}
-            ></div>
-            <div
-              className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-              style={{ animationDelay: "0.2s" }}
-            ></div>
-          </div>
-        ) : (
-          <p className="text-sm leading-relaxed">{message}</p>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Question Input Component
-const QuestionInput: React.FC<{
-  currentAnswer: string;
-  onAnswerChange: (answer: string) => void;
-  onSubmit: () => void;
-  isSubmitting: boolean;
-}> = ({ currentAnswer, onAnswerChange, onSubmit, isSubmitting }) => {
-  const handleKeyPress = (
-    e: React.KeyboardEvent<HTMLTextAreaElement>
-  ): void => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      if (currentAnswer.trim() && !isSubmitting) {
-        onSubmit();
-      }
+    if (current < questions.length - 1) {
+      setCurrent(current + 1);
     }
   };
 
-  return (
-    <div className="flex items-end space-x-3">
-      <div className="flex-1">
-        <textarea
-          value={currentAnswer}
-          onChange={(e) => onAnswerChange(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Type your answer here..."
-          className="w-full min-h-[60px] max-h-32 p-4 rounded-2xl border border-gray-700 bg-gray-800/50 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
-          rows={2}
-          disabled={isSubmitting}
-        />
-      </div>
-      <Button
-        onClick={onSubmit}
-        disabled={!currentAnswer.trim() || isSubmitting}
-        className="p-3 rounded-2xl"
-        size="md"
-      >
-        {isSubmitting ? (
-          <Loader2 className="w-5 h-5 animate-spin" />
-        ) : (
-          <Send className="w-5 h-5" />
-        )}
-      </Button>
-    </div>
-  );
-};
+  const handlePrev = () => {
+    const currentQuestion = questions[current];
+    const currentAnswer = answers[current];
 
-// Main Symptom Analysis Component
-const FollowUpSection: React.FC<FollowUpSectionProps> = ({
-  onNext,
-  onBack,
-}) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [questions, setQuestions] = useState<LLMQuestion[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Answer[]>([]);
-  const [currentAnswer, setCurrentAnswer] = useState("");
-  const [isComplete, setIsComplete] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const user_info = useSelector((state: RootState) => state.chat.user_info);
-  const symptoms = "cough, fever, fatigue";
-  const [chatHistory, setChatHistory] = useState<
-    Array<{ message: string; isBot: boolean }>
-  >([]);
-  const dispatch: RootDispatch = useDispatch();
+    questionAnswersCollection(currentQuestion, currentAnswer);
+
+    if (current > 0) {
+      setCurrent(current - 1);
+    }
+  };
 
   useEffect(() => {
     dispatch(
       generatefollowUpQuestion({
         sessionId: "1",
-        user_info: user_info,
-        userSymptoms: symptoms,
+        user_info,
+        userSymptoms,
       })
     );
-  });
+  }, [dispatch, user_info, userSymptoms]);
 
-  // Simulate LLM generated questions
-  const simulatedLLMQuestions = [
-    "How long have you been experiencing these symptoms?",
-    "Can you describe the intensity or severity of your symptoms on a scale you're comfortable with?",
-    "Have you noticed any patterns in when your symptoms occur or worsen?",
-    "Are you currently taking any medications or have you tried any treatments?",
-    "Have you experienced similar symptoms before, and if so, what was the outcome?",
-  ];
+  const progress = ((current + 1) / questions.length) * 100;
 
-  useEffect(() => {
-    // Simulate loading and LLM question generation
-    const timer = setTimeout(() => {
-      const generatedQuestions: LLMQuestion[] = simulatedLLMQuestions.map(
-        (q, index) => ({
-          id: index + 1,
-          question: q,
-          isAnswered: false,
-        })
-      );
+  const questionAnswersCollection = (question: string, answer: string) => {
+    setQuestionAnswers((prevData) => {
+      return {
+        ...prevData,
+        [question]: answer,
+      };
+    });
+  };
 
-      setQuestions(generatedQuestions);
-      setIsLoading(false);
+  const onCompleteAssessment = async () => {
+    const response = await dispatch(
+      submitFollowupAnswersThunk({
+        sessionId: "1",
+        user_response: questionAnswers,
+      })
+    ).unwrap();
 
-      // Add initial bot message
-      setChatHistory([
-        {
-          message:
-            "I'll ask you a few personalized questions to better understand your symptoms. Please answer as detailed as you feel comfortable.",
-          isBot: true,
-        },
-      ]);
-    }, 3000);
+    const formattedResponse = response.formatted_response;
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  const handleSubmitAnswer = async (): Promise<void> => {
-    if (!currentAnswer.trim() || isSubmitting) return;
-
-    setIsSubmitting(true);
-    const currentQuestion = questions[currentQuestionIndex];
-
-    // Add user answer to chat
-    setChatHistory((prev) => [
-      ...prev,
-      {
-        message: currentAnswer,
-        isBot: false,
-      },
-    ]);
-
-    // Save answer
-    const newAnswer: Answer = {
-      questionId: currentQuestion.id,
-      question: currentQuestion.question,
-      answer: currentAnswer.trim(),
-    };
-
-    setAnswers((prev) => {
-      const filtered = prev.filter((a) => a.questionId !== currentQuestion.id);
-      return [...filtered, newAnswer];
+    // Step 2: Generate Final Prompt using all context
+    console.log({
+      sessionId: "1",
+      userSymptoms, // check if it's already an array
+      user_info,
+      formatted_response: formattedResponse,
+      followupQuestions: questions,
     });
 
-    // Mark question as answered
-    setQuestions((prev) =>
-      prev.map((q) =>
-        q.id === currentQuestion.id ? { ...q, isAnswered: true } : q
-      )
-    );
-
-    setCurrentAnswer("");
-
-    // Simulate processing time
-    setTimeout(() => {
-      setIsSubmitting(false);
-
-      if (currentQuestionIndex < questions.length - 1) {
-        // Move to next question
-        setCurrentQuestionIndex((prev) => prev + 1);
-
-        // Add next question to chat
-        const nextQuestion = questions[currentQuestionIndex + 1];
-        setTimeout(() => {
-          setChatHistory((prev) => [
-            ...prev,
-            {
-              message: nextQuestion.question,
-              isBot: true,
-            },
-          ]);
-        }, 1000);
-      } else {
-        // All questions completed
-        setTimeout(() => {
-          setChatHistory((prev) => [
-            ...prev,
-            {
-              message:
-                "Thank you for providing detailed information about your symptoms. I'm now analyzing your responses to provide personalized insights.",
-              isBot: true,
-            },
-          ]);
-          setIsComplete(true);
-        }, 1000);
-      }
-    }, 1500);
+    await dispatch(
+      generateFinalPromptThunk({
+        sessionId: "1",
+        userSymptoms: [userSymptoms],
+        user_info,
+        formatted_response: formattedResponse,
+        followupQuestions: questions,
+      })
+    ).unwrap();
   };
-
-  const goToPreviousQuestion = (): void => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((prev) => prev - 1);
-      const prevAnswer = answers.find(
-        (a) => a.questionId === questions[currentQuestionIndex - 1].id
-      );
-      setCurrentAnswer(prevAnswer?.answer || "");
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-black flex items-center justify-center">
-        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-gray-900 to-gray-900"></div>
-        <div className="relative z-10">
-          <LoadingAnalysis />
-        </div>
-      </div>
-    );
-  }
-
-  if (isComplete) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-black flex items-center justify-center p-4">
-        <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-green-900/20 via-gray-900 to-gray-900"></div>
-        <Card className="w-full max-w-2xl mx-auto relative z-10">
-          <div className="p-8 text-center">
-            <div className="flex justify-center mb-6">
-              <div className="p-4 bg-green-600/20 rounded-full">
-                <CheckCircle2 className="w-12 h-12 text-green-400" />
-              </div>
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-4">
-              Assessment Complete!
-            </h2>
-            <p className="text-gray-400 mb-8">
-              Thank you for providing detailed information about your symptoms.
-              Our AI is now analyzing your responses to provide personalized
-              health insights.
-            </p>
-            <div className="bg-blue-600/10 border border-blue-600/20 rounded-lg p-4 mb-6">
-              <h4 className="font-medium text-blue-400 mb-2">Your Responses</h4>
-              <p className="text-sm text-gray-400">
-                You've answered {answers.length} personalized questions.
-                Analysis will be ready in a few moments.
-              </p>
-            </div>
-            <Button size="lg" className="w-full">
-              View Analysis Results
-            </Button>
-          </div>
-        </Card>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-black">
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-gray-900 to-gray-900"></div>
-      <div className="fixed inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]"></div>
-
-      <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header */}
-        <div className="flex-shrink-0 p-6 border-b border-gray-800/50">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                  AI Symptom Assessment
-                </h1>
-                <p className="text-gray-400 text-sm mt-1">
-                  Personalized questions based on your symptoms
-                </p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-400">Progress:</span>
-                <div className="flex space-x-1">
-                  {questions.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-2 h-2 rounded-full transition-all ${
-                        index < currentQuestionIndex
-                          ? "bg-green-500"
-                          : index === currentQuestionIndex
-                          ? "bg-blue-500 scale-125"
-                          : "bg-gray-600"
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm text-blue-400 ml-2">
-                  {currentQuestionIndex + 1}/{questions.length}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Chat Area */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto p-6">
-            <div className="space-y-6 mb-6">
-              {chatHistory.map((chat, index) => (
-                <ChatMessage
-                  key={index}
-                  message={chat.message}
-                  isBot={chat.isBot}
-                />
-              ))}
-
-              {/* Current question */}
-              {currentQuestionIndex < questions.length && (
-                <ChatMessage
-                  message={questions[currentQuestionIndex].question}
-                  isBot={true}
-                />
-              )}
-
-              {/* Show typing indicator when submitting */}
-              {isSubmitting && (
-                <ChatMessage message="" isBot={true} isTyping={true} />
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Input Area */}
-        {!isComplete && currentQuestionIndex < questions.length && (
-          <div className="flex-shrink-0 p-6 border-t border-gray-800/50">
-            <div className="max-w-4xl mx-auto">
-              <QuestionInput
-                currentAnswer={currentAnswer}
-                onAnswerChange={setCurrentAnswer}
-                onSubmit={handleSubmitAnswer}
-                isSubmitting={isSubmitting}
-              />
-
-              {/* Navigation */}
-              <div className="flex justify-between items-center mt-4">
-                <Button
-                  variant="ghost"
-                  onClick={goToPreviousQuestion}
-                  disabled={currentQuestionIndex === 0 || isSubmitting}
-                  size="sm"
-                >
-                  <ChevronLeft className="w-4 h-4 mr-1" />
-                  Previous
-                </Button>
-                <div className="text-xs text-gray-500">
-                  Press Enter to send • Shift+Enter for new line
-                </div>
-                <div className="w-20"></div> {/* Spacer for balance */}
-              </div>
-            </div>
-          </div>
-        )}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-4 -right-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+        <div className="absolute -bottom-8 -left-4 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse delay-500"></div>
       </div>
-      <div className="flex gap-3">
-        <Button variant="outline" onClick={onBack} className="flex-1 py-3">
-          Back
-        </Button>
-        <Button onClick={onNext} className="flex-1 py-3 text-base">
-          Complete Assessment
-          <ChevronRight className="ml-2 h-4 w-4" />
-        </Button>
+
+      <div className="relative w-full max-w-2xl">
+        {/* Header with sparkles */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent mb-2">
+            Follow-Up Questions
+          </h1>
+          <p className="text-slate-400 text-lg">
+            Help us understand your situation better
+          </p>
+        </div>
+
+        {/* Progress bar */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium text-slate-300">Progress</span>
+            <span className="text-sm font-medium text-purple-400">
+              {current + 1} of {questions.length}
+            </span>
+          </div>
+          <div className="w-full bg-slate-800/50 rounded-full h-2 backdrop-blur-sm">
+            <div
+              className="bg-gradient-to-r from-purple-500 to-cyan-500 h-2 rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Main card */}
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20 hover:border-purple-500/30 transition-all duration-300">
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                {current + 1}
+              </div>
+              <div className="h-px flex-1 bg-gradient-to-r from-purple-500/50 to-transparent"></div>
+            </div>
+
+            <h2 className="text-xl font-semibold text-white mb-6 leading-relaxed">
+              {questions[current]}
+            </h2>
+
+            <div className="relative">
+              <input
+                type="text"
+                className="w-full p-4 rounded-2xl  text-gray-800 border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 backdrop-blur-sm transition-all duration-200 placeholder-slate-400 text-lg"
+                value={answers[current]}
+                onChange={handleChange}
+                placeholder="Type your answer here..."
+              />
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/5 to-cyan-500/5 pointer-events-none"></div>
+            </div>
+          </div>
+
+          {/* Navigation buttons */}
+          <div className="flex justify-between items-center">
+            <button
+              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+                current === 0
+                  ? "bg-slate-800/50 text-slate-500 cursor-not-allowed"
+                  : "bg-white/10 text-white hover:bg-white/20 border border-white/10 hover:border-white/20 backdrop-blur-sm"
+              }`}
+              onClick={handlePrev}
+              disabled={current === 0}
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Previous
+            </button>
+
+            {current < questions.length - 1 ? (
+              <button
+                className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 ${
+                  !answers[current]
+                    ? "bg-slate-700/50 text-slate-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-purple-600 to-purple-500 text-white hover:from-purple-500 hover:to-purple-400 shadow-lg shadow-purple-500/25"
+                }`}
+                onClick={handleNext}
+                disabled={!answers[current]}
+              >
+                Next
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 ${
+                  !answers[current]
+                    ? "bg-slate-700/50 text-slate-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-500 hover:to-emerald-400 shadow-lg shadow-emerald-500/25"
+                }`}
+                disabled={!answers[current]}
+                onClick={onCompleteAssessment}
+              >
+                <Check className="w-4 h-4" />
+                Complete Assessment
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Question indicators */}
+        <div className="flex justify-center mt-8 gap-2">
+          {questions.map((_, index) => (
+            <div
+              key={index}
+              className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                index === current
+                  ? "bg-purple-500 w-8"
+                  : index < current
+                  ? "bg-emerald-500"
+                  : "bg-slate-600"
+              }`}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

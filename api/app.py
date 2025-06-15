@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from api.State import InitInput, FollowupInput, FollowupAnswers, DiagnosisInput, UserInfoInput
-from chat.chat_graph import compiled_graph
+from api.State import FinalPromptInput, InitInput, FollowupInput, FollowupAnswers, DiagnosisInput, UserInfoInput
+from chat.chat_graph import compiled_graph, generate_final_prompt
 from chat.get_more_question_chain import generate_more_question_chain
 from chat.qa_chain import qa_chain
 from fastapi.middleware.cors import CORSMiddleware
@@ -58,6 +58,36 @@ async def getAnswers(data: FollowupAnswers):
     state = {"user_response": data.user_response}
     result = compiled_graph.invoke(state)
     return result
+
+
+# 5 generate final Prompt
+@app.post("/generate_final_prompt")
+async def generateFinalPrompt(data: FinalPromptInput):
+    symptoms = data.userSymptoms
+    user_info = data.user_info
+    formatted_response = data.formatted_response
+
+    lines = [
+        "User reported the following symptoms:",
+        ", ".join(symptoms) + ".",
+        f"User info: {user_info}",
+        "",
+    ]
+
+    if formatted_response:
+        lines.append("Follow-up questions and user's answers:")
+        lines.append(formatted_response)
+
+    lines.append(
+        "\nBased on the above information, provide a detailed medical analysis, possible diagnoses, "
+        "and recommended next steps. Be clear and concise."
+    )
+
+    final_prompt = "\n".join(lines)
+
+    return {"finalPrompt": final_prompt}
+
+
 
 # 5 Generate final diagnosis from all state
 @app.post("/generate_diagnosis")
