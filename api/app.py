@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from api.State import FinalPromptInput, InitInput, FollowupInput, FollowupAnswers, DiagnosisInput, UserInfoInput
+from api.State import FinalPromptInput, FinalPromptOutput, InitInput, FollowupInput, FollowupAnswers, DiagnosisInput, UserInfoInput
 from chat.chat_graph import compiled_graph, generate_final_prompt
 from chat.get_more_question_chain import generate_more_question_chain
 from chat.qa_chain import qa_chain
@@ -35,7 +35,6 @@ async def getInfo(data: UserInfoInput):
     result = compiled_graph.invoke(state)
     return result
 
-# 3 LLM generate more question
 @app.post("/generate_followUp")
 async def generate_follow_up(data: FollowupInput):
     state = {
@@ -51,6 +50,40 @@ async def generate_follow_up(data: FollowupInput):
     ]
 
     return {"followupQuestions": questions}
+
+# 3 LLM generate more question
+@app.post("/generate_final_prompt", response_model=FinalPromptOutput)
+async def generate_final_prompt(data: FinalPromptInput):
+    symptoms = data.userSymptoms
+    user_info = data.user_info
+    formatted_response = data.formatted_response or ""
+
+    lines = [
+        "User reported the following symptoms:",
+        ", ".join(symptoms) + ".",
+        f"User info: {user_info}",
+        "",
+    ]
+
+    if formatted_response:
+        lines.append("Follow-up questions and user's answers:")
+
+        # Pretty format dictionary if it's not already a string
+        if isinstance(formatted_response, dict):
+            for q, a in formatted_response.items():
+                lines.append(f"Q: {q}\nA: {a}")
+        else:
+            lines.append(str(formatted_response))  # fallback
+
+
+    lines.append(
+        "\nBased on the above information, provide a detailed medical analysis, possible diagnoses, "
+        "and recommended next steps. Be clear and concise."
+    )
+
+    final_prompt = "\n".join(lines)
+    return {"final_prompt": final_prompt}
+
 
 # 4 Provide answers to follow-up questions
 @app.post("/get_answers")

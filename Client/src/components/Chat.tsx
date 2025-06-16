@@ -8,6 +8,7 @@ import type { RootDispatch } from "../store";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { getPersonalInfo, startChat } from "../store/slices/chatSlice";
+import DiagnosisResult from "./steps/diagnosis";
 
 const Chat: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(0);

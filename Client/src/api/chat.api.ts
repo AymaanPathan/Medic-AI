@@ -71,23 +71,37 @@ export const submitFollowupAnswers = async (
 
 // Generate final Prompt
 export const generateFinalPrompt = async (
-  sessionId: string,
-  userSymptoms: string[], // ✅ should be an array
+  session_id: string,
+  userSymptoms: string,
   user_info: string,
-  formatted_response: string,
-  followupQuestions: string[]
+  formatted_response: Record<string, string>
 ) => {
   try {
     const response = await axiosSetup.post("/generate_final_prompt", {
-      session_id: sessionId,
+      session_id,
       userSymptoms,
       user_info,
       formatted_response,
-      followupQuestions,
     });
     return response.data;
   } catch (error) {
     console.error("Error generating final prompt:", error);
+    throw error;
+  }
+};
+// final Answer
+export const getFinalDiagnosis = async (
+  session_id: string,
+  finalPrompt: string
+) => {
+  try {
+    const response = await axiosSetup.post("/generate_diagnosis", {
+      session_id,
+      finalPrompt,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error generating diagnosis:", error);
     throw error;
   }
 };

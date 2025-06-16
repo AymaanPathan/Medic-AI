@@ -22,10 +22,12 @@ class FollowupAnswers(BaseModel):
 
 class FinalPromptInput(BaseModel):
     session_id: str
-    userSymptoms: List[str]
+    userSymptoms: str
     user_info: str
-    formatted_response: str
-    followupQuestions: List[str]   
+    formatted_response: Dict[str, str]
+
+class FinalPromptOutput(BaseModel):
+    final_prompt: str
 
 class DiagnosisInput(BaseModel):
     session_id: str

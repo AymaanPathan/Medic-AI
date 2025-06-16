@@ -86,7 +86,6 @@ def generate_final_prompt(state: ChatState) -> Command:
     symptoms = state.get("userSymptoms", [])
     user_info = state.get("user_info", "")
     formatted_response = state.get("formatted_response", "")
-    followup_questions = state.get("followupQuestions", [])
 
     lines = [
         "User reported the following symptoms:",

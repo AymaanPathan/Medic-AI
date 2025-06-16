@@ -5,6 +5,7 @@ import type { RootDispatch, RootState } from "../../store";
 import {
   generateFinalPromptThunk,
   generatefollowUpQuestion,
+  generateLLMAnswer,
   submitFollowupAnswersThunk,
 } from "../../store/slices/chatSlice";
 
@@ -12,7 +13,9 @@ const FollowUpSection: React.FC = () => {
   const [current, setCurrent] = useState(0);
   const dispatch: RootDispatch = useDispatch();
   const [questionAnswers, setQuestionAnswers] = useState({});
-
+  const finalPrompt = useSelector((state: RootState) => state.chat.finalPrompt);
+  const diagnosis = useSelector((state: RootState) => state.chat.diagnosis);
+  console.log("Final Prompt:", finalPrompt);
   const user_info = useSelector((state: RootState) => state.chat.user_info);
   const userSymptoms = useSelector(
     (state: RootState) => state.chat.userSymptoms
@@ -82,27 +85,35 @@ const FollowUpSection: React.FC = () => {
       })
     ).unwrap();
 
-    const formattedResponse = response.formatted_response;
+    const formattedResponse = response.user_response;
+    console.log("Formatted Response:", formattedResponse);
 
-    // Step 2: Generate Final Prompt using all context
     console.log({
       sessionId: "1",
-      userSymptoms, // check if it's already an array
+      userSymptoms,
       user_info,
       formatted_response: formattedResponse,
-      followupQuestions: questions,
+      followupQuestions: questionAnswers,
     });
 
     await dispatch(
       generateFinalPromptThunk({
         sessionId: "1",
-        userSymptoms: [userSymptoms],
+        userSymptoms: userSymptoms,
         user_info,
         formatted_response: formattedResponse,
-        followupQuestions: questions,
+      })
+    ).unwrap();
+
+    await dispatch(
+      generateLLMAnswer({
+        session_id: "1",
+        finalPrompt: finalPrompt,
       })
     ).unwrap();
   };
+  console.log("finalPrompt:", finalPrompt);
+  console.log("diagnosis:", diagnosis);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
@@ -171,7 +182,7 @@ const FollowUpSection: React.FC = () => {
             <button
               className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
                 current === 0
-                  ? "bg-slate-800/50 text-slate-500 cursor-not-allowed"
+                  ? "bg-slate-800/50 text-slate-500 "
                   : "bg-white/10 text-white hover:bg-white/20 border border-white/10 hover:border-white/20 backdrop-blur-sm"
               }`}
               onClick={handlePrev}
@@ -198,10 +209,9 @@ const FollowUpSection: React.FC = () => {
               <button
                 className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 ${
                   !answers[current]
-                    ? "bg-slate-700/50 text-slate-400 cursor-not-allowed"
+                    ? "bg-slate-700/50 text-slate-400 "
                     : "bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-500 hover:to-emerald-400 shadow-lg shadow-emerald-500/25"
                 }`}
-                disabled={!answers[current]}
                 onClick={onCompleteAssessment}
               >
                 <Check className="w-4 h-4" />

@@ -5,4 +5,5 @@ export interface IChat {
   followupQuestions: string[];
   user_response: Record<string, string>;
   finalPrompt: string;
+  diagnosis: string;
 }

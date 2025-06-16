@@ -3,6 +3,7 @@ import type { IChat } from "../../models/chat";
 import {
   generateFinalPrompt,
   generateFollowUp,
+  getFinalDiagnosis,
   getUserPersonalInfo,
   getUserSymptoms,
   submitFollowupAnswers,
@@ -15,6 +16,7 @@ const initialState: IChat = {
   followupQuestions: [],
   user_response: {},
   finalPrompt: "",
+  diagnosis: "",
 };
 
 // 1 Take user symptoms and start a chat session
@@ -89,23 +91,33 @@ export const generateFinalPromptThunk = createAsyncThunk(
     userSymptoms,
     user_info,
     formatted_response,
-    followupQuestions,
   }: {
     sessionId: string;
-    userSymptoms: string[];
+    userSymptoms: string;
     user_info: string;
-    formatted_response: string;
-    followupQuestions: string[];
+    formatted_response: Record<string, string>;
   }) => {
     const response = await generateFinalPrompt(
       sessionId,
       userSymptoms,
       user_info,
-      formatted_response,
-      followupQuestions
+      formatted_response
     );
+    return response;
+  }
+);
+export const generateLLMAnswer = createAsyncThunk(
+  "chat/generateLLMAnswer",
+  async ({
+    session_id,
+    finalPrompt,
+  }: {
+    session_id: string;
+    finalPrompt: string;
+  }) => {
+    const response = await getFinalDiagnosis(session_id, finalPrompt);
     console.log("Response from generateFinalPrompt:", response);
-    return { finalPrompt: response.finalPrompt };
+    return response;
   }
 );
 
@@ -152,7 +164,12 @@ const chatSlice = createSlice({
         state.finalPrompt = action.payload.formatted_response;
       })
       .addCase(generateFinalPromptThunk.fulfilled, (state, action) => {
-        state.finalPrompt = action.payload.finalPrompt;
+        console.log("action.payload:", action.payload);
+        console.log("action.payload.prompt:", action.payload.final_prompt);
+        state.finalPrompt = action.payload.final_prompt;
+      })
+      .addCase(generateLLMAnswer.fulfilled, (state, action) => {
+        state.diagnosis = action.payload;
       });
   },
 });
