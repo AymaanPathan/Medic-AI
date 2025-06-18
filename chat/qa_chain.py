@@ -5,8 +5,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from chat.connect_memory_for_llm import llm
 from chat.qa_prompt import custom_prompt_template
-
-
+from chat.OutPutState import OutPutState
 def set_custom_prompt(prompt_template: str):
     return PromptTemplate(template=prompt_template, input_variables=["context", "question"])
 
@@ -27,6 +26,6 @@ retriever = vectorstore.as_retriever(
 qa_chain = (
     {"context": retriever, "question": RunnablePassthrough()}
     | prompt
-    | llm
+    | llm.with_structured_output(OutPutState)
     | StrOutputParser()
 )
