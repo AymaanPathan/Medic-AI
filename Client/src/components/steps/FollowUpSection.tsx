@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ChevronLeft, Check, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { RootDispatch, RootState } from "../../store";
 import {
   generateFinalPromptThunk,
@@ -8,11 +9,16 @@ import {
   generateLLMAnswer,
   submitFollowupAnswersThunk,
 } from "../../store/slices/chatSlice";
+import { socket } from "../../utils/socketSetup";
 
 const FollowUpSection: React.FC = () => {
   const [current, setCurrent] = useState(0);
+  const [questionAnswers, setQuestionAnswers] = useState<
+    Record<string, string>
+  >({});
   const dispatch: RootDispatch = useDispatch();
-  const [questionAnswers, setQuestionAnswers] = useState({});
+  const navigate = useNavigate();
+
   const finalPrompt = useSelector((state: RootState) => state.chat.finalPrompt);
   const diagnosis = useSelector((state: RootState) => state.chat.diagnosis);
   const user_info = useSelector((state: RootState) => state.chat.user_info);
@@ -23,37 +29,7 @@ const FollowUpSection: React.FC = () => {
     (state: RootState) => state.chat.followupQuestions
   );
 
-  const [answers, setAnswers] = useState<string[]>(
-    Array(questions.length).fill("")
-  );
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const updated = [...answers];
-    updated[current] = e.target.value;
-    setAnswers(updated);
-  };
-
-  const handleNext = () => {
-    const currentQuestion = questions[current];
-    const currentAnswer = answers[current];
-
-    questionAnswersCollection(currentQuestion, currentAnswer);
-
-    if (current < questions.length - 1) {
-      setCurrent(current + 1);
-    }
-  };
-
-  const handlePrev = () => {
-    const currentQuestion = questions[current];
-    const currentAnswer = answers[current];
-
-    questionAnswersCollection(currentQuestion, currentAnswer);
-
-    if (current > 0) {
-      setCurrent(current - 1);
-    }
-  };
+  const [answers, setAnswers] = useState<string[]>([]);
 
   useEffect(() => {
     dispatch(
@@ -65,16 +41,51 @@ const FollowUpSection: React.FC = () => {
     );
   }, [dispatch, user_info, userSymptoms]);
 
-  const progress = ((current + 1) / questions.length) * 100;
+  useEffect(() => {
+    if (questions.length) {
+      setAnswers(Array(questions.length).fill(""));
+    }
+  }, [questions]);
 
-  const questionAnswersCollection = (question: string, answer: string) => {
-    setQuestionAnswers((prevData) => {
-      return {
-        ...prevData,
-        [question]: answer,
-      };
+  useEffect(() => {
+    socket.on("diagnosis_chunk", (data) => {
+      console.log("Received diagnosis chunk:", data);
     });
+
+    socket.on("diagnosis_done", (data) => {
+      console.log("✅ Diagnosis complete:", data);
+    });
+
+    return () => {
+      socket.off("diagnosis_chunk");
+      socket.off("diagnosis_done");
+    };
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const updated = [...answers];
+    updated[current] = e.target.value;
+    setAnswers(updated);
+
+    setQuestionAnswers((prev) => ({
+      ...prev,
+      [questions[current]]: e.target.value,
+    }));
   };
+
+  const handleNext = () => {
+    if (current < questions.length - 1) {
+      setCurrent(current + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (current > 0) {
+      setCurrent(current - 1);
+    }
+  };
+
+  const progress = ((current + 1) / questions.length) * 100;
 
   const onCompleteAssessment = async () => {
     const response = await dispatch(
@@ -101,11 +112,23 @@ const FollowUpSection: React.FC = () => {
         finalPrompt: finalPrompt,
       })
     ).unwrap();
+
+    // navigate("/diagnosis");
   };
+  const emit = () => {
+    const res = socket.emit("start_diagnosis", {
+      finalPrompt: finalPrompt,
+    });
+    if (res) {
+      navigate("/diagnosis");
+    }
+  };
+  console.log("finalPrompt", finalPrompt);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
       {/* Background decorative elements */}
+
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-4 -right-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
         <div className="absolute -bottom-8 -left-4 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
@@ -113,7 +136,6 @@ const FollowUpSection: React.FC = () => {
       </div>
 
       <div className="relative w-full max-w-2xl">
-        {/* Header with sparkles */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent mb-2">
             Follow-Up Questions
@@ -123,7 +145,6 @@ const FollowUpSection: React.FC = () => {
           </p>
         </div>
 
-        {/* Progress bar */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-medium text-slate-300">Progress</span>
@@ -139,7 +160,6 @@ const FollowUpSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Main card */}
         <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20 hover:border-purple-500/30 transition-all duration-300">
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4">
@@ -156,8 +176,8 @@ const FollowUpSection: React.FC = () => {
             <div className="relative">
               <input
                 type="text"
-                className="w-full p-4 rounded-2xl  text-gray-800 border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 backdrop-blur-sm transition-all duration-200 placeholder-slate-400 text-lg"
-                value={answers[current]}
+                className="w-full p-4 rounded-2xl text-gray-800 border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 backdrop-blur-sm transition-all duration-200 placeholder-slate-400 text-lg"
+                value={answers[current] || ""}
                 onChange={handleChange}
                 placeholder="Type your answer here..."
               />
@@ -165,12 +185,11 @@ const FollowUpSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Navigation buttons */}
           <div className="flex justify-between items-center">
             <button
               className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
                 current === 0
-                  ? "bg-slate-800/50 text-slate-500 "
+                  ? "bg-slate-800/50 text-slate-500"
                   : "bg-white/10 text-white hover:bg-white/20 border border-white/10 hover:border-white/20 backdrop-blur-sm"
               }`}
               onClick={handlePrev}
@@ -179,6 +198,8 @@ const FollowUpSection: React.FC = () => {
               <ChevronLeft className="w-4 h-4" />
               Previous
             </button>
+
+            <button onClick={emit}>Emit</button>
 
             {current < questions.length - 1 ? (
               <button
@@ -197,19 +218,19 @@ const FollowUpSection: React.FC = () => {
               <button
                 className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105 ${
                   !answers[current]
-                    ? "bg-slate-700/50 text-slate-400 "
+                    ? "bg-slate-700/50 text-slate-400"
                     : "bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-500 hover:to-emerald-400 shadow-lg shadow-emerald-500/25"
                 }`}
                 onClick={onCompleteAssessment}
+                disabled={!answers[current]}
               >
                 <Check className="w-4 h-4" />
-                Complete Assessment
+                Next
               </button>
             )}
           </div>
         </div>
 
-        {/* Question indicators */}
         <div className="flex justify-center mt-8 gap-2">
           {questions.map((_, index) => (
             <div

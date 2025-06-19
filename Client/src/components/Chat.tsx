@@ -6,10 +6,9 @@ import FollowUpSection from "./steps/FollowUpSection";
 import { useDispatch } from "react-redux";
 import type { RootDispatch } from "../store";
 import { AnimatePresence, motion } from "framer-motion";
-import { io } from "socket.io-client";
 
 import { getPersonalInfo, startChat } from "../store/slices/chatSlice";
-const socket = io("http://127.0.0.1:8000");
+import { socket } from "../utils/socketSetup";
 const Chat: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [symptoms, setSymptoms] = useState<string>("");
@@ -25,45 +24,8 @@ const Chat: React.FC = () => {
     lifestyleChanges: [],
     dangerSigns: [],
   });
-  useEffect(() => {
-    socket.on("diagnosis_chunk", (data) => {
-      console.log("Received diagnosis chunk:", data);
-      if (data.text) {
-        setDiagnosis({
-          diseaseName: data.text.diseaseName,
-          diseaseSummary: data.text.diseaseSummary,
-          whyYouHaveThis: data.text.whyYouHaveThis,
-          whatToDoFirst: data.text.whatToDoFirst,
-          medicines: data.text.medicines,
-          lifestyleChanges: data.text.lifestyleChanges,
-          dangerSigns: data.text.dangerSigns,
-        });
-      }
-    });
 
-    socket.on("diagnosis_done", (data) => {
-      console.log("✅ Diagnosis complete:", data);
-    });
-
-    return () => {
-      socket.off("diagnosis_chunk");
-      socket.off("diagnosis_done");
-    };
-  }, []);
   const user_info = `age ${age} and gender ${gender}`;
-
-  const startDiagnosis = (finalPrompt: string) => {
-    setDiagnosis({
-      diseaseName: "",
-      diseaseSummary: "",
-      whyYouHaveThis: "",
-      whatToDoFirst: "",
-      medicines: [],
-      lifestyleChanges: [],
-      dangerSigns: [],
-    }); // clear old diagnosis
-    socket.emit("start_diagnosis", { finalPrompt });
-  };
 
   const nextStep = (): void => {
     if (currentStep === 0) {
@@ -108,16 +70,43 @@ const Chat: React.FC = () => {
     <FollowUpSection />,
     <ThankYouSection onRestart={restart} />,
   ];
-  console.log("diagnosis", diagnosis);
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gray-950 text-white">
-      <button
-        className="px-4 py-2 bg-blue-600 text-white rounded"
-        onClick={() => startDiagnosis("User has fever and cough for 3 days...")}
-      >
-        Start Diagnosis
-      </button>
+      {/* Background Layer (absolute, not fixed) */}
+      <div className="absolute inset-0 z-0">
+        <div className="h-full w-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-gray-900 to-black" />
+        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]" />
+      </div>
+
+      {/* Main Content */}
+      <div className="relative z-10">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.4 }}
+          >
+            {steps[currentStep]}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Step Indicators */}
+      <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-20">
+        <div className="flex space-x-2">
+          {[0, 1, 2, 3].map((step) => (
+            <div
+              key={step}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                step === currentStep ? "bg-blue-500 scale-125" : "bg-gray-600"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
