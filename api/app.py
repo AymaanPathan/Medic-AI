@@ -4,6 +4,7 @@ from chat.chat_graph import compiled_graph, generate_final_prompt
 from chat.get_more_question_chain import generate_more_question_chain
 from chat.qa_chain import qa_chain
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 app = FastAPI()
 origins = [
     "*",

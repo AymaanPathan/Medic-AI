@@ -18,7 +18,7 @@ DB_FAISS_PATH = "vectorstore/db_faiss"
 
 model_id = "mistralai/Mistral-7B-Instruct-v0.3"
 def load_llm(model_name: str = "llama3-8b-8192"):
-    llm = ChatGroq(model=model_name, temperature=0.2,
+    llm = ChatGroq(model=model_name, temperature=0.2,streaming=True,
     api_key=os.getenv("GROQ_API_KEY"))
     structured_model = llm
     return structured_model
