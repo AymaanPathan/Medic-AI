@@ -126,5 +126,8 @@ async def generateFinalPrompt(data: FinalPromptInput):
 # 5 Generate final diagnosis from all state
 @app.post("/generate_diagnosis")
 async def getDiagnosis(data: DiagnosisInput):
-    result = qa_chain.invoke(data.finalPrompt)
-    return result
+    # result = qa_chain.invoke(data.finalPrompt)
+    # return result
+
+    async for event in qa_chain.astream_events(data.finalPrompt):
+             print(event, end="|", flush=True)
