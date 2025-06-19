@@ -15,7 +15,6 @@ const FollowUpSection: React.FC = () => {
   const [questionAnswers, setQuestionAnswers] = useState({});
   const finalPrompt = useSelector((state: RootState) => state.chat.finalPrompt);
   const diagnosis = useSelector((state: RootState) => state.chat.diagnosis);
-  console.log("Final Prompt:", finalPrompt);
   const user_info = useSelector((state: RootState) => state.chat.user_info);
   const userSymptoms = useSelector(
     (state: RootState) => state.chat.userSymptoms
@@ -86,15 +85,6 @@ const FollowUpSection: React.FC = () => {
     ).unwrap();
 
     const formattedResponse = response.user_response;
-    console.log("Formatted Response:", formattedResponse);
-
-    console.log({
-      sessionId: "1",
-      userSymptoms,
-      user_info,
-      formatted_response: formattedResponse,
-      followupQuestions: questionAnswers,
-    });
 
     await dispatch(
       generateFinalPromptThunk({
@@ -112,8 +102,6 @@ const FollowUpSection: React.FC = () => {
       })
     ).unwrap();
   };
-  console.log("finalPrompt:", finalPrompt);
-  console.log("diagnosis:", diagnosis);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">

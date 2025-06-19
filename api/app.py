@@ -1,21 +1,24 @@
+import json
 from fastapi import FastAPI
+from fastapi.encoders import jsonable_encoder
 from api.State import (
     FinalPromptInput, FinalPromptOutput, InitInput,
     FollowupInput, FollowupAnswers, DiagnosisInput, UserInfoInput
 )
+from fastapi.responses import StreamingResponse
 from chat.chat_graph import compiled_graph
 from chat.get_more_question_chain import generate_more_question_chain
 from chat.qa_chain import qa_chain
 from fastapi.middleware.cors import CORSMiddleware
 import socketio
-
+allowed_origins = ["http://localhost:5174","http://localhost:5173"]
 # ✅ Step 1: Create FastAPI app for normal HTTP routes
 fastapi_app = FastAPI()
 
 # ✅ Step 2: Add CORS to FastAPI
 fastapi_app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5174"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -91,25 +94,29 @@ async def getAnswers(data: FollowupAnswers):
 
 @fastapi_app.post("/generate_diagnosis")
 async def getDiagnosis(data: DiagnosisInput):
-    # For testing streaming from backend (not used in production)
-    async for event in qa_chain.astream_events(data.finalPrompt):
-        yield event
+    result = qa_chain.invoke(data.finalPrompt)
+    return result
    
 
 
 # ✅ Step 4: Create Socket.IO server
 sio = socketio.AsyncServer(
     async_mode='asgi',
-    cors_allowed_origins=["http://localhost:5174"]
+    cors_allowed_origins=allowed_origins
 )
 
 @sio.on("start_diagnosis")
 async def handle_diagnosis(sid, data):
     prompt = data.get("finalPrompt")
-    async for event in qa_chain.astream_events(prompt):
-        await sio.emit("diagnosis_chunk", {"event": event}, to=sid)
-    await sio.emit("diagnosis_done", {"message": "complete"}, to=sid)
+    if not prompt:
+        await sio.emit("diagnosis_chunk", {"error": "Prompt is missing"}, to=sid)
+        return
 
+    async for chunk in qa_chain.astream(prompt):
+        # 🔥 Make sure you're sending actual object, not stringified JSON
+        await sio.emit("diagnosis_chunk", {"text": jsonable_encoder(chunk)}, to=sid)
+
+    await sio.emit("diagnosis_done", {"message": "complete"}, to=sid)
 
 # ✅ Step 5: Wrap FastAPI app in ASGIApp with Socket.IO
 app = socketio.ASGIApp(

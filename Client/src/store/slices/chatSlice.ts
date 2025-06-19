@@ -30,7 +30,6 @@ export const startChat = createAsyncThunk(
     userSymptoms: string;
   }) => {
     const response = await getUserSymptoms(sessionId, userSymptoms);
-    console.log("Response from startChat:", response);
     return response;
   }
 );
@@ -46,7 +45,6 @@ export const getPersonalInfo = createAsyncThunk(
     user_info: string;
   }) => {
     const response = await getUserPersonalInfo(sessionId, user_info);
-    console.log("Response from userInfo:", response);
     return response;
   }
 );
@@ -63,7 +61,6 @@ export const generatefollowUpQuestion = createAsyncThunk(
     userSymptoms: string;
   }) => {
     const response = await generateFollowUp(sessionId, user_info, userSymptoms);
-    console.log("Response from generateFollowUp:", response);
     return response;
   }
 );
@@ -79,7 +76,6 @@ export const submitFollowupAnswersThunk = createAsyncThunk(
     user_response: Record<string, string>;
   }) => {
     const response = await submitFollowupAnswers(sessionId, user_response);
-    console.log("Response from submitFollowupAnswers:", response);
     return { user_response, formatted_response: response.formatted_response };
   }
 );
@@ -116,7 +112,6 @@ export const generateLLMAnswer = createAsyncThunk(
     finalPrompt: string;
   }) => {
     const response = await getFinalDiagnosis(session_id, finalPrompt);
-    console.log("Response from generateFinalPrompt:", response);
     return response;
   }
 );
@@ -164,8 +159,6 @@ const chatSlice = createSlice({
         state.finalPrompt = action.payload.formatted_response;
       })
       .addCase(generateFinalPromptThunk.fulfilled, (state, action) => {
-        console.log("action.payload:", action.payload);
-        console.log("action.payload.prompt:", action.payload.final_prompt);
         state.finalPrompt = action.payload.final_prompt;
       })
       .addCase(generateLLMAnswer.fulfilled, (state, action) => {
