@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import SymptomSection from "./steps/SymptomSection";
 import { PersonalInfoSection } from "./steps/PersonalSection";
 import { ThankYouSection } from "./steps/ThankYouSection";
@@ -6,15 +6,25 @@ import FollowUpSection from "./steps/FollowUpSection";
 import { useDispatch } from "react-redux";
 import type { RootDispatch } from "../store";
 import { AnimatePresence, motion } from "framer-motion";
+import { io } from "socket.io-client";
 
 import { getPersonalInfo, startChat } from "../store/slices/chatSlice";
-
+const socket = io("http://127.0.0.1:8000");
 const Chat: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [symptoms, setSymptoms] = useState<string>("");
   const [age, setAge] = useState<string>("");
   const [gender, setGender] = useState<string>("");
   const dispatch: RootDispatch = useDispatch();
+
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log("Connected to the server");
+    });
+    socket.on("diagnosis_chunk", (data) => {
+      console.log("📦 Chunk received:", data);
+    });
+  }, []);
 
   const user_info = `age ${age} and gender ${gender}`;
 

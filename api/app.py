@@ -1,46 +1,49 @@
 from fastapi import FastAPI
-from api.State import FinalPromptInput, FinalPromptOutput, InitInput, FollowupInput, FollowupAnswers, DiagnosisInput, UserInfoInput
-from chat.chat_graph import compiled_graph, generate_final_prompt
+from api.State import (
+    FinalPromptInput, FinalPromptOutput, InitInput,
+    FollowupInput, FollowupAnswers, DiagnosisInput, UserInfoInput
+)
+from chat.chat_graph import compiled_graph
 from chat.get_more_question_chain import generate_more_question_chain
 from chat.qa_chain import qa_chain
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
-app = FastAPI()
-origins = [
-    "*",
-]
+import socketio
 
-app.add_middleware(
+# ✅ Step 1: Create FastAPI app for normal HTTP routes
+fastapi_app = FastAPI()
+
+# ✅ Step 2: Add CORS to FastAPI
+fastapi_app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["http://localhost:5174"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.get('/')
+# ✅ Step 3: Define REST API routes on fastapi_app
+
+@fastapi_app.get("/")
 async def test():
     return {"message": "Hello medic-man"}
 
-# 1 Initialize the chat first time
-@app.post("/init")
+@fastapi_app.post("/init")
 async def initializeChat(data: InitInput):
     state = {"symptoms_input": data.userSymptoms}
     result = compiled_graph.invoke(state)
     return result
 
-# 2 get more personal information like age/gender
-@app.post("/get_personal_info")
+@fastapi_app.post("/get_personal_info")
 async def getInfo(data: UserInfoInput):
     state = {"user_info": data.user_info}
     result = compiled_graph.invoke(state)
     return result
 
-@app.post("/generate_followUp")
+@fastapi_app.post("/generate_followUp")
 async def generate_follow_up(data: FollowupInput):
     state = {
-        "user_info":data.user_info,
-        "userSymptoms":data.userSymptoms
+        "user_info": data.user_info,
+        "userSymptoms": data.userSymptoms
     }
     llm_output = generate_more_question_chain.invoke(state)
 
@@ -49,11 +52,9 @@ async def generate_follow_up(data: FollowupInput):
         for line in llm_output.split("\n")
         if line.strip().startswith("-")
     ]
-
     return {"followupQuestions": questions}
 
-# 3 LLM generate more question
-@app.post("/generate_final_prompt", response_model=FinalPromptOutput)
+@fastapi_app.post("/generate_final_prompt", response_model=FinalPromptOutput)
 async def generate_final_prompt(data: FinalPromptInput):
     symptoms = data.userSymptoms
     user_info = data.user_info
@@ -68,66 +69,51 @@ async def generate_final_prompt(data: FinalPromptInput):
 
     if formatted_response:
         lines.append("Follow-up questions and user's answers:")
-
-        # Pretty format dictionary if it's not already a string
         if isinstance(formatted_response, dict):
             for q, a in formatted_response.items():
                 lines.append(f"Q: {q}\nA: {a}")
         else:
-            lines.append(str(formatted_response))  # fallback
-
+            lines.append(str(formatted_response))
 
     lines.append(
-        "\nBased on the above information, provide a detailed medical analysis, possible diagnoses, "
-        "and recommended next steps. Be clear and concise."
+        "\nBased on the above information, provide a detailed medical analysis, "
+        "possible diagnoses, and recommended next steps. Be clear and concise."
     )
 
     final_prompt = "\n".join(lines)
     return {"final_prompt": final_prompt}
 
-
-# 4 Provide answers to follow-up questions
-@app.post("/get_answers")
+@fastapi_app.post("/get_answers")
 async def getAnswers(data: FollowupAnswers):
     state = {"user_response": data.user_response}
     result = compiled_graph.invoke(state)
     return result
 
-
-# 5 generate final Prompt
-@app.post("/generate_final_prompt")
-async def generateFinalPrompt(data: FinalPromptInput):
-    symptoms = data.userSymptoms
-    user_info = data.user_info
-    formatted_response = data.formatted_response
-
-    lines = [
-        "User reported the following symptoms:",
-        ", ".join(symptoms) + ".",
-        f"User info: {user_info}",
-        "",
-    ]
-
-    if formatted_response:
-        lines.append("Follow-up questions and user's answers:")
-        lines.append(formatted_response)
-
-    lines.append(
-        "\nBased on the above information, provide a detailed medical analysis, possible diagnoses, "
-        "and recommended next steps. Be clear and concise."
-    )
-
-    final_prompt = "\n".join(lines)
-
-    return {"finalPrompt": final_prompt}
-
-
-
-# 5 Generate final diagnosis from all state
-@app.post("/generate_diagnosis")
+@fastapi_app.post("/generate_diagnosis")
 async def getDiagnosis(data: DiagnosisInput):
-    # result = qa_chain.invoke(data.finalPrompt)
-    # return result
-
+    # For testing streaming from backend (not used in production)
     async for event in qa_chain.astream_events(data.finalPrompt):
-             print(event, end="|", flush=True)
+        yield event
+   
+
+
+# ✅ Step 4: Create Socket.IO server
+sio = socketio.AsyncServer(
+    async_mode='asgi',
+    cors_allowed_origins=["http://localhost:5174"]
+)
+
+@sio.on("start_diagnosis")
+async def handle_diagnosis(sid, data):
+    prompt = data.get("finalPrompt")
+    async for event in qa_chain.astream_events(prompt):
+        await sio.emit("diagnosis_chunk", {"event": event}, to=sid)
+    await sio.emit("diagnosis_done", {"message": "complete"}, to=sid)
+
+
+# ✅ Step 5: Wrap FastAPI app in ASGIApp with Socket.IO
+app = socketio.ASGIApp(
+    socketio_server=sio,
+    other_asgi_app=fastapi_app,
+    socketio_path="/socket.io"
+)
