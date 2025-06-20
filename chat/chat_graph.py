@@ -31,15 +31,7 @@ def chat(state: ChatState) -> Command:
     )
 
 
-# 2. ask personal question
-def ask_user_info(state: ChatState) -> Command:
-    user_info = state.get("user_info")
-    if user_info:
-        return Command(goto="generate_more")
 
-    if not state.get("user_info"):
-        return Command(update={"error": "user_info missing"}, goto=END)
-    return Command(goto="generate_more")
 
 # 3. generate more question
 def generate_more_symptoms(state: ChatState) -> Command:
@@ -121,7 +113,6 @@ def generate_response(state: ChatState) -> Command:
 # --- Register nodes ---
 graph.add_node("chat", chat)
 graph.set_entry_point("chat")
-graph.add_node("get_user_info", ask_user_info)
 graph.add_node("generate_more", generate_more_symptoms)
 graph.add_node("capture_user_responses_to_dynamic_questions", capture_user_responses_to_dynamic_questions)
 graph.add_node("final_prompt", generate_final_prompt)

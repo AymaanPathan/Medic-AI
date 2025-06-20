@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
 from api.State import (
     FinalPromptInput, FinalPromptOutput, InitInput,
-    FollowupInput, FollowupAnswers, DiagnosisInput, UserInfoInput
+    FollowupInput, FollowupAnswers, DiagnosisInput
 )
 from fastapi.responses import StreamingResponse
 from chat.chat_graph import compiled_graph
@@ -36,11 +36,7 @@ async def initializeChat(data: InitInput):
     result = compiled_graph.invoke(state)
     return result
 
-@fastapi_app.post("/get_personal_info")
-async def getInfo(data: UserInfoInput):
-    state = {"user_info": data.user_info}
-    result = compiled_graph.invoke(state)
-    return result
+
 
 @fastapi_app.post("/generate_followUp")
 async def generate_follow_up(data: FollowupInput):

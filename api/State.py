@@ -7,9 +7,6 @@ class InitInput(BaseModel):
     session_id: str
     userSymptoms: str
 
-class UserInfoInput(BaseModel):
-    session_id: str
-    user_info: str
 
 class FollowupInput(BaseModel):
     session_id: str

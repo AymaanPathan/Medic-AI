@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import SymptomSection from "./steps/SymptomSection";
-import { PersonalInfoSection } from "./steps/PersonalSection";
 import { ThankYouSection } from "./steps/ThankYouSection";
 import FollowUpSection from "./steps/FollowUpSection";
 import { useDispatch } from "react-redux";
@@ -8,22 +7,12 @@ import type { RootDispatch } from "../store";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { getPersonalInfo, startChat } from "../store/slices/chatSlice";
-import { socket } from "../utils/socketSetup";
 const Chat: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [symptoms, setSymptoms] = useState<string>("");
   const [age, setAge] = useState<string>("");
   const [gender, setGender] = useState<string>("");
   const dispatch: RootDispatch = useDispatch();
-  const [diagnosis, setDiagnosis] = useState({
-    diseaseName: "",
-    diseaseSummary: "",
-    whyYouHaveThis: "",
-    whatToDoFirst: "",
-    medicines: [],
-    lifestyleChanges: [],
-    dangerSigns: [],
-  });
 
   const user_info = `age ${age} and gender ${gender}`;
 
@@ -40,12 +29,6 @@ const Chat: React.FC = () => {
     }
   };
 
-  const prevStep = (): void => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
   const restart = (): void => {
     setCurrentStep(0);
     setSymptoms("");
@@ -58,14 +41,6 @@ const Chat: React.FC = () => {
       symptoms={symptoms}
       setSymptoms={setSymptoms}
       onNext={nextStep}
-    />,
-    <PersonalInfoSection
-      age={age}
-      setAge={setAge}
-      gender={gender}
-      setGender={setGender}
-      onNext={nextStep}
-      onBack={prevStep}
     />,
     <FollowUpSection />,
     <ThankYouSection onRestart={restart} />,
