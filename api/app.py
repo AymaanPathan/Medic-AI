@@ -41,7 +41,6 @@ async def initializeChat(data: InitInput):
 @fastapi_app.post("/generate_followUp")
 async def generate_follow_up(data: FollowupInput):
     state = {
-        "user_info": data.user_info,
         "userSymptoms": data.userSymptoms
     }
     llm_output = generate_more_question_chain.invoke(state)
@@ -53,17 +52,20 @@ async def generate_follow_up(data: FollowupInput):
     ]
     return {"followupQuestions": questions}
 
+@fastapi_app.post("/get_answers")
+async def getAnswers(data: FollowupAnswers):
+    state = {"user_response": data.user_response}
+    result = compiled_graph.invoke(state)
+    return result
+
 @fastapi_app.post("/generate_final_prompt", response_model=FinalPromptOutput)
 async def generate_final_prompt(data: FinalPromptInput):
     symptoms = data.userSymptoms
-    user_info = data.user_info
     formatted_response = data.formatted_response or ""
 
     lines = [
         "User reported the following symptoms:",
         ", ".join(symptoms) + ".",
-        f"User info: {user_info}",
-        "",
     ]
 
     if formatted_response:
@@ -82,11 +84,7 @@ async def generate_final_prompt(data: FinalPromptInput):
     final_prompt = "\n".join(lines)
     return {"final_prompt": final_prompt}
 
-@fastapi_app.post("/get_answers")
-async def getAnswers(data: FollowupAnswers):
-    state = {"user_response": data.user_response}
-    result = compiled_graph.invoke(state)
-    return result
+
 
 @fastapi_app.post("/generate_diagnosis")
 async def getDiagnosis(data: DiagnosisInput):

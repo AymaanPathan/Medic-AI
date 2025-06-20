@@ -10,7 +10,6 @@ class InitInput(BaseModel):
 
 class FollowupInput(BaseModel):
     session_id: str
-    user_info: str
     userSymptoms: str
 
 class FollowupAnswers(BaseModel):
@@ -20,7 +19,6 @@ class FollowupAnswers(BaseModel):
 class FinalPromptInput(BaseModel):
     session_id: str
     userSymptoms: str
-    user_info: str
     formatted_response: Dict[str, str]
 
 class FinalPromptOutput(BaseModel):

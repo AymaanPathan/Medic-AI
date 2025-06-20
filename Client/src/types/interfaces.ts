@@ -57,3 +57,31 @@ export interface PersonalInfoSectionProps {
 export interface ThankYouSectionProps {
   onRestart: () => void;
 }
+
+// Chat Types
+
+export type Diagnosis = {
+  diseaseName: string;
+  diseaseSummary: string;
+  whyYouHaveThis: string;
+  whatToDoFirst: string;
+  medicines: Array<{
+    name: string;
+    purpose: string;
+    how_it_works: string;
+    pros: string[];
+    cons: string[];
+    when_not_to_take: string[];
+    dosage: { [key: string]: string };
+    age_restriction?: string;
+  }>;
+  lifestyleChanges?: string[];
+  dangerSigns?: string[];
+};
+
+export type Message = {
+  id: number;
+  type: string;
+  content: string | Diagnosis;
+  timestamp: Date;
+};

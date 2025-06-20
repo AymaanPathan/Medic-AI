@@ -35,7 +35,6 @@ const FollowUpSection: React.FC = () => {
     dispatch(
       generatefollowUpQuestion({
         sessionId: "1",
-        user_info,
         userSymptoms,
       })
     );
@@ -101,7 +100,6 @@ const FollowUpSection: React.FC = () => {
       generateFinalPromptThunk({
         sessionId: "1",
         userSymptoms: userSymptoms,
-        user_info,
         formatted_response: formattedResponse,
       })
     ).unwrap();

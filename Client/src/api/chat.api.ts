@@ -36,13 +36,11 @@ export const getUserPersonalInfo = async (
 // 3 generate follow up questions
 export const generateFollowUp = async (
   sessionId: string,
-  user_info: string,
   userSymptoms: string
 ) => {
   try {
     const response = await axiosSetup.post("/generate_followUp", {
       session_id: sessionId,
-      user_info: user_info,
       userSymptoms: userSymptoms,
     });
     return response.data;
@@ -73,14 +71,12 @@ export const submitFollowupAnswers = async (
 export const generateFinalPrompt = async (
   session_id: string,
   userSymptoms: string,
-  user_info: string,
   formatted_response: Record<string, string>
 ) => {
   try {
     const response = await axiosSetup.post("/generate_final_prompt", {
       session_id,
       userSymptoms,
-      user_info,
       formatted_response,
     });
     return response.data;

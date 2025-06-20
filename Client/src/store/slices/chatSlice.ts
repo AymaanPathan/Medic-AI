@@ -53,14 +53,12 @@ export const generatefollowUpQuestion = createAsyncThunk(
   "chat/generateFollowUp",
   async ({
     sessionId,
-    user_info,
     userSymptoms,
   }: {
     sessionId: string;
-    user_info: string;
     userSymptoms: string;
   }) => {
-    const response = await generateFollowUp(sessionId, user_info, userSymptoms);
+    const response = await generateFollowUp(sessionId, userSymptoms);
     return response;
   }
 );
@@ -85,18 +83,16 @@ export const generateFinalPromptThunk = createAsyncThunk(
   async ({
     sessionId,
     userSymptoms,
-    user_info,
     formatted_response,
   }: {
     sessionId: string;
     userSymptoms: string;
-    user_info: string;
     formatted_response: Record<string, string>;
   }) => {
     const response = await generateFinalPrompt(
       sessionId,
       userSymptoms,
-      user_info,
+
       formatted_response
     );
     return response;
