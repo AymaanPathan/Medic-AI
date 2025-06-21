@@ -26,11 +26,26 @@ def record_audio(file_path_wav="patient_audio_test.wav", timeout=2000, phrase_ti
     except Exception as error:
         logging.error(f"Error occurred: {error}")
         return None
-
-# Record and get path
-file_path = record_audio()
+    
+record_audio()
 
 # Take text from audio
 import os
+from groq import Groq
+
+audio_file_path = "patient_audio_test.wav"
+print(audio_file_path)
+
 Groq_api = os.environ.get("GROQ_API_KEY_Image")
-model = "whisper-large-v3-turbo"
+model = "whisper-large-v3"
+
+audio_file=open(audio_file_path,"rb")
+
+client = Groq(api_key=Groq_api)
+transcript = client.audio.transcriptions.create(
+        model=model,
+        file=audio_file,
+        language="en"
+)
+
+print(transcript.text)
