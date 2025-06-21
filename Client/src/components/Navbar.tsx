@@ -15,7 +15,7 @@ import {
 const navItems = [
   {
     label: "AI Diagnosis",
-    path: "/chatPage",
+    path: "/symptoms-checker",
     icon: Sparkles,
     description: "Get instant AI-powered health insights",
   },

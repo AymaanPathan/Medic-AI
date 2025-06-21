@@ -1,0 +1,5 @@
+1. take the voice from user and convert it to text
+
+2. generate a message that has both image and text
+
+3. pass this message to llama vision model
