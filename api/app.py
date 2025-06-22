@@ -11,6 +11,15 @@ from chat.get_more_question_chain import generate_more_question_chain
 from chat.qa_chain import qa_chain
 from fastapi.middleware.cors import CORSMiddleware
 import socketio
+
+from fastapi import UploadFile, File
+from fastapi.responses import FileResponse
+import base64
+import os
+from  Image_voice_Identifier.voice_convert_to_text import get_user_voice_with_groq
+from Image_voice_Identifier.Voice_of_doc import text_to_speech_with_elevenlabs
+from groq import Groq
+
 allowed_origins = ["http://localhost:5174","http://localhost:5173"]
 # ✅ Step 1: Create FastAPI app for normal HTTP routes
 fastapi_app = FastAPI()
@@ -118,3 +127,59 @@ app = socketio.ASGIApp(
     other_asgi_app=fastapi_app,
     socketio_path="/socket.io"
 )
+
+# image and voice
+@fastapi_app.post("/analyze_with_voice_image")
+async def analyze_with_voice_and_image(image: UploadFile = File(...), audio: UploadFile = File(...)):
+    # Step 1: Save uploaded image and audio
+    image_bytes = await image.read()
+    audio_bytes = await audio.read()
+
+    with open("temp_image.jpg", "wb") as f:
+        f.write(image_bytes)
+
+    with open("temp_audio.wav", "wb") as f:
+        f.write(audio_bytes)
+
+    # Step 2: Get transcript from audio
+    audio_file = open("temp_audio.wav", "rb")
+    transcript_text = get_user_voice_with_groq(model="whisper-large-v3", audio_file=audio_file)
+    audio_file.close()
+
+    # Step 3: Encode image for LLM
+    encoded_image = base64.b64encode(image_bytes).decode("utf-8")
+
+    # Step 4: Query Groq LLM with image + text
+    client = Groq()
+    response = client.chat.completions.create(
+        model="meta-llama/llama-4-scout-17b-16e-instruct",
+        messages=[{
+            "role": "user",
+            "content": [
+                {"type": "text", "text": transcript_text},
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{encoded_image}"}}
+            ]
+        }]
+    )
+    diagnosis_text = response.choices[0].message.content
+
+    # Step 5: Convert LLM response to voice
+    mp3_path = "output_response.mp3"
+    wav_path = "output_response.wav"
+    text_to_speech_with_elevenlabs(
+        input_text=diagnosis_text,
+        output_filepath=mp3_path,
+        wav_path=wav_path,
+        voice_id="TxGEqnHWrfWFTfGW9XjX"
+    )
+
+    # Step 6: Send back text + voice
+    return {
+        "diagnosis": diagnosis_text,
+        "audio_url": "/get_voice_response"
+    }
+
+
+@fastapi_app.get("/get_voice_response")
+async def get_voice_response():
+    return FileResponse("output_response.mp3", media_type="audio/mpeg")
