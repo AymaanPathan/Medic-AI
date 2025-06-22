@@ -37,15 +37,14 @@ audio_file_path = "patient_audio_test.wav"
 print(audio_file_path)
 
 Groq_api = os.environ.get("GROQ_API_KEY_Image")
-model = "whisper-large-v3"
+stt_model = "whisper-large-v3"
+file=open(audio_file_path,"rb")
 
-audio_file=open(audio_file_path,"rb")
-
-client = Groq(api_key=Groq_api)
-transcript = client.audio.transcriptions.create(
-        model=model,
-        file=audio_file,
-        language="en"
-)
-
-print(transcript.text)
+def get_user_voice_with_groq(model,audio_file):
+    client = Groq(api_key=Groq_api)
+    transcript = client.audio.transcriptions.create(
+            model=model,
+            file=audio_file,
+            language="en"
+    )
+    return transcript.text

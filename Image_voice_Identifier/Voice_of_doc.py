@@ -58,6 +58,7 @@ def text_to_speech_with_elevenlabs(input_text, output_filepath, wav_path="gtts_t
     except Exception as e:
         print(f"An error occurred while trying to play the audio: {e}")
 
+
 text_to_speech_with_elevenlabs(
     "You have cough and try to avoid icecream man and also dring hot soup" \
     "it will help your throat",

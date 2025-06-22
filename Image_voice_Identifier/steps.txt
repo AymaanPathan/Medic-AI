@@ -1,5 +1,3 @@
-1. take the voice from user and convert it to text
-
-2. generate a message that has both image and text
-
-3. pass this message to llama vision model
+1. take the voice from user and convert it to text of patient [done]
+2. pass this generated text to openai model
+3. take image from user and also pass to open ai model
