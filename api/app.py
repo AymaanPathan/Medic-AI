@@ -1,4 +1,3 @@
-import json
 from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
 from api.State import (
@@ -13,10 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import socketio
 
 from fastapi import UploadFile, File
-from fastapi.responses import FileResponse
 import base64
-import os
-from  Image_voice_Identifier.voice_convert_to_text import get_user_voice_with_groq
 from Image_voice_Identifier.Voice_of_doc import text_to_speech_with_elevenlabs
 from groq import Groq
 
@@ -142,9 +138,8 @@ async def analyze_with_voice_and_image(image: UploadFile = File(...), audio: Upl
         f.write(audio_bytes)
 
     # Step 2: Get transcript from audio
-    audio_file = open("temp_audio.wav", "rb")
-    transcript_text = get_user_voice_with_groq(model="whisper-large-v3", audio_file=audio_file)
-    audio_file.close()
+    with open("temp_audio.wav", "r", encoding="utf-8") as f:
+        transcript_text = f.read()
 
     # Step 3: Encode image for LLM
     encoded_image = base64.b64encode(image_bytes).decode("utf-8")
@@ -180,6 +175,3 @@ async def analyze_with_voice_and_image(image: UploadFile = File(...), audio: Upl
     }
 
 
-@fastapi_app.get("/get_voice_response")
-async def get_voice_response():
-    return FileResponse("output_response.mp3", media_type="audio/mpeg")
