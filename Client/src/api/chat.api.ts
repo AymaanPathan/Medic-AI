@@ -101,3 +101,29 @@ export const getFinalDiagnosis = async (
     throw error;
   }
 };
+
+export const analyzeVoiceAndImage = async (
+  imageFile: File,
+  audioFile: File
+): Promise<{ diagnosis: string; audio_url: string }> => {
+  try {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+    formData.append("audio", audioFile);
+
+    const response = await axiosSetup.post(
+      "/analyze_with_voice_image",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error analyzing voice and image:", error);
+    throw error;
+  }
+};

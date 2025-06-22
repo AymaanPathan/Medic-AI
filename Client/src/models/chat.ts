@@ -6,4 +6,7 @@ export interface IChat {
   user_response: Record<string, string>;
   finalPrompt: string;
   diagnosis: string;
+  audioUrl?: "";
+  loading: boolean;
+  error: string | null;
 }

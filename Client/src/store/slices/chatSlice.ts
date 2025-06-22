@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { IChat } from "../../models/chat";
 import {
+  analyzeVoiceAndImage,
   generateFinalPrompt,
   generateFollowUp,
   getFinalDiagnosis,
@@ -17,6 +18,9 @@ const initialState: IChat = {
   user_response: {},
   finalPrompt: "",
   diagnosis: "",
+  audioUrl: "",
+  loading: false,
+  error: null,
 };
 
 // 1 Take user symptoms and start a chat session
@@ -112,6 +116,30 @@ export const generateLLMAnswer = createAsyncThunk(
   }
 );
 
+export const analyzeImageAndVoiceThunk = createAsyncThunk(
+  "chat/analyzeImageAndVoice",
+  async (
+    {
+      imageFile,
+      audioFile,
+    }: {
+      imageFile: File;
+      audioFile: File;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const result = await analyzeVoiceAndImage(imageFile, audioFile);
+      return result;
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return rejectWithValue(err.message);
+      }
+      return rejectWithValue("An unknown error occurred");
+    }
+  }
+);
+
 const chatSlice = createSlice({
   name: "chat",
   initialState,
@@ -159,6 +187,19 @@ const chatSlice = createSlice({
       })
       .addCase(generateLLMAnswer.fulfilled, (state, action) => {
         state.diagnosis = action.payload;
+      })
+      .addCase(analyzeImageAndVoiceThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(analyzeImageAndVoiceThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.diagnosis = action.payload.diagnosis;
+        state.audioUrl = action.payload.audio_url;
+      })
+      .addCase(analyzeImageAndVoiceThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

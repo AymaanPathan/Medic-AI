@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import type { Message } from "@/types/interfaces";
 import SideBar from "./SideBar";
-import UploadImagePage from "./UploadImagePage";
+import VoiceImageDiagnosis from "./VoiceImageDiagnosis";
 import Chat from "./ChatWithLLm";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootDispatch, RootState } from "@/store";
@@ -64,7 +64,7 @@ const ChatPage = () => {
             />
           ) : (
             <div className="flex-1 flex flex-col justify-center items-center">
-              <UploadImagePage />
+              <VoiceImageDiagnosis />
             </div>
           )}
         </div>

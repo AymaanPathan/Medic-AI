@@ -26,6 +26,12 @@ const navItems = [
     description: "Locate top-rated physicians near you",
   },
   {
+    label: "Upload Image",
+    path: "/find-doctor",
+    icon: MapPin,
+    description: "Locate top-rated physicians near you",
+  },
+  {
     label: "Telehealth",
     path: "/consultation",
     icon: Video,
