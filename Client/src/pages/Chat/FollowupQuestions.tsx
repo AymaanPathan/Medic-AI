@@ -88,8 +88,8 @@ const FollowUpQuestions = () => {
   );
 
   return (
-    <div className="min-h-screen  flex flex-col w-full">
-      <main className="flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 flex-grow">
+    <div className="min-h-screen flex flex-col w-full">
+      <main className="flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 flex-grow w-full">
         <div className="w-full max-w-3xl">
           {/* Progress Indicator */}
           <div className="mb-8">
@@ -110,16 +110,16 @@ const FollowUpQuestions = () => {
           </div>
 
           {/* Question Card */}
-          <div className="bg-white rounded-3xl p-8 sm:p-10 shadow-xl border border-gray-100 mb-10">
+          <div className="bg-white p-8 sm:p-10 mb-10 rounded-2xl shadow-sm">
             <div className="mb-8">
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-center gap-4 mb-6 w-full max-w-xs">
                 <div className="w-10 h-10 bg-green-600 rounded-2xl flex items-center justify-center text-white font-bold">
                   {current + 1}
                 </div>
                 <div className="flex-1 h-px bg-gray-200" />
               </div>
 
-              <h2 className="text-2xl font-medium text-gray-600 mb-6 leading-relaxed">
+              <h2 className="text-2xl text-gray-600 mb-6 leading-relaxed">
                 {questions[current]}
               </h2>
 
@@ -132,8 +132,8 @@ const FollowUpQuestions = () => {
               />
             </div>
 
-            {/* Buttons */}
-            <div className="flex justify-between items-center">
+            {/* Navigation Buttons */}
+            <div className="flex flex-col sm:flex-row justify-between gap-4 items-stretch sm:items-center">
               {/* Previous */}
               <button
                 className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition ${
