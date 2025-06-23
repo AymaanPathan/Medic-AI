@@ -23,6 +23,10 @@ import {
   Trash2,
   ChevronRight,
 } from "lucide-react";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store";
+import { socket } from "@/utils/socketSetup";
+import DiagnosisCard from "./DiagnosisCard";
 
 const ChatInterface = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -104,6 +108,7 @@ const ChatInterface = () => {
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [sessionId] = useState("MED-2025-001");
+  const finalPrompt = useSelector((state: RootState) => state.chat.finalPrompt);
   const [diagnosis, setDiagnosis] = useState(null);
 
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -112,6 +117,17 @@ const ChatInterface = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    const res = socket.emit("start_diagnosis", {
+      finalPrompt: finalPrompt,
+    });
+    if (res.connected) {
+      socket.on("diagnosis_chunk", (data: any) => {
+        setDiagnosis(data?.text);
+      });
+    }
+  }, [finalPrompt, setDiagnosis]);
 
   const formatTime = (timestamp: Date) => {
     return new Intl.DateTimeFormat("en-US", {
@@ -485,6 +501,11 @@ const ChatInterface = () => {
             </div>
           ))}
 
+          {diagnosis && (
+            <div className="mt-6">
+              <DiagnosisCard diagnosis={diagnosis} />
+            </div>
+          )}
           {/* Typing Indicator */}
           {isTyping && (
             <div className="flex items-start gap-4">

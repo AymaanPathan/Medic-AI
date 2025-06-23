@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router";
 import LandingPage from "./pages/Home/LandingPage";
 import SymptomForm from "./pages/Chat/SymptomForm";
 import FollowupQuestions from "./pages/Chat/FollowupQuestions";
-import MedicalChat from "./pages/MedicalChat";
+import MedicalChat from "./pages/Chat/MedicalChat";
 import VoiceImageDiagnosis from "./pages/Chat/VoiceImageDiagnosis";
 const App: React.FC = () => {
   return (

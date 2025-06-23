@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { startChat, generatefollowUpQuestion } from "@/store/slices/chatSlice";
-import { Brain, HeartPulse, Shield, Sparkles, Stethoscope } from "lucide-react";
+import { Shield, Sparkles, Stethoscope } from "lucide-react";
 import type { RootDispatch, RootState } from "@/store";
 import { useSelector } from "react-redux";
 import Navbar from "@/components/Navbar";

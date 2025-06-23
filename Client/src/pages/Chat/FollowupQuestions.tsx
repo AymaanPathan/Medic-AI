@@ -25,7 +25,6 @@ const FollowUpQuestions = () => {
     (state: RootState) => state.chat.followupQuestions
   );
   const navigate = useNavigate();
-  const sessionId = useSelector((state: RootState) => state.chat.sessionId);
   const progress = ((current + 1) / questions.length) * 100;
 
   const handleChange = (
@@ -74,7 +73,11 @@ const FollowUpQuestions = () => {
         })
       ).unwrap();
     }
-    if (response.meta.requestStatus === "fulfilled") {
+    const res = socket.emit("start_diagnosis", {
+      finalPrompt: finalPrompt,
+    });
+
+    if (res && response.meta.requestStatus === "fulfilled") {
       navigate("/chat");
     }
   };
@@ -83,12 +86,6 @@ const FollowUpQuestions = () => {
     "User additional follow-up answers:",
     userAdditionalFollowupAnswer
   );
-
-  const emit = () => {
-    const res = socket.emit("start_diagnosis", {
-      finalPrompt: finalPrompt,
-    });
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -157,13 +154,6 @@ const FollowUpQuestions = () => {
               >
                 <ChevronLeft className="w-4 h-4" />
                 Previous
-              </button>
-
-              <button
-                onClick={emit}
-                className="px-4 py-2 text-sm text-gray-400 hover:text-gray-600 transition"
-              >
-                Debug
               </button>
 
               {current < questions.length - 1 ? (

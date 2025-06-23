@@ -189,6 +189,7 @@ const chatSlice = createSlice({
         state.finalPrompt = action.payload.formatted_response;
       })
       .addCase(generateFinalPromptThunk.fulfilled, (state, action) => {
+        console.log("Final prompt generated:", action.payload);
         state.finalPrompt = action.payload.final_prompt;
       })
       .addCase(generateLLMAnswer.fulfilled, (state, action) => {
