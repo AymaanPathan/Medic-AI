@@ -9,11 +9,10 @@ from pydub import AudioSegment
 
 def autoPlay(mp3_path,wav_path):
     try:
-        # Convert mp3 to wav
         sound = AudioSegment.from_mp3(mp3_path)
         sound.export(wav_path, format="wav")
         os_name = platform.system()
-        if os_name == "Darwin":  # macOS
+        if os_name == "Darwin":  
             subprocess.run(['afplay', wav_path])
         elif os_name == "Windows":
             subprocess.run(['powershell', '-c', f'(New-Object Media.SoundPlayer "{wav_path}").PlaySync();'])
@@ -59,9 +58,3 @@ def text_to_speech_with_elevenlabs(input_text, output_filepath, wav_path="gtts_t
         print(f"An error occurred while trying to play the audio: {e}")
 
 
-text_to_speech_with_elevenlabs(
-    "You have cough and try to avoid icecream man and also dring hot soup" \
-    "it will help your throat",
-    output_filepath="eleven_labs_testing.mp3",
-    voice_id="TxGEqnHWrfWFTfGW9XjX"
-)

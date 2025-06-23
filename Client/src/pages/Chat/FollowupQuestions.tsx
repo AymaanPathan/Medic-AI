@@ -8,6 +8,7 @@ import {
 } from "@/store/slices/chatSlice";
 import { socket } from "@/utils/socketSetup";
 import { useNavigate } from "react-router";
+import Navbar from "@/components/Navbar";
 
 const FollowUpQuestions = () => {
   const [current, setCurrent] = useState(0);
@@ -91,6 +92,7 @@ const FollowUpQuestions = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <Navbar />
       <div className="w-full max-w-3xl">
         {/* Header */}
         <div className="text-center mb-12">

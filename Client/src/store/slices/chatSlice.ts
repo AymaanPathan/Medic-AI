@@ -147,6 +147,7 @@ const chatSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(startChat.pending, (state) => {
+        state.loading = true;
         console.log("Starting chat session...");
       })
       .addCase(startChat.fulfilled, (state, action) => {
@@ -154,24 +155,29 @@ const chatSlice = createSlice({
         state.userSymptoms = action.payload.userSymptoms;
       })
       .addCase(startChat.rejected, (state, action) => {
+        state.loading = false;
         console.error("Failed to start chat:", action.error.message);
       })
       .addCase(getPersonalInfo.pending, (state) => {
+        state.loading = true;
         console.log("Fetching personal info...");
       })
       .addCase(getPersonalInfo.fulfilled, (state, action) => {
         state.user_info = action.payload.user_info;
       })
       .addCase(getPersonalInfo.rejected, (state, action) => {
+        state.loading = false;
         console.error("Failed to get personal info:", action.error.message);
       })
       .addCase(generatefollowUpQuestion.pending, (state) => {
+        state.loading = true;
         console.log("Generating follow-up questions...");
       })
       .addCase(generatefollowUpQuestion.fulfilled, (state, action) => {
         state.followupQuestions = action.payload.followupQuestions;
       })
       .addCase(generatefollowUpQuestion.rejected, (state, action) => {
+        state.loading = false;
         console.error(
           "Failed to generate follow-up questions:",
           action.error.message
@@ -195,7 +201,6 @@ const chatSlice = createSlice({
       .addCase(analyzeImageAndVoiceThunk.fulfilled, (state, action) => {
         state.loading = false;
         state.diagnosis = action.payload.diagnosis;
-        state.audioUrl = action.payload.audio_url;
       })
       .addCase(analyzeImageAndVoiceThunk.rejected, (state, action) => {
         state.loading = false;
