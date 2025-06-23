@@ -88,19 +88,10 @@ const FollowUpQuestions = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Navbar */}
-      <div className="w-full shadow-md bg-white fixed top-0 left-0 z-50">
-        <Navbar />
-      </div>
-
-      {/* Spacer for navbar */}
-      <div className="h-20" />
-
-      {/* Main Content */}
+    <div className="min-h-screen  flex flex-col w-full">
       <main className="flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 flex-grow">
         <div className="w-full max-w-3xl">
-          {/* Progress Bar */}
+          {/* Progress Indicator */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-gray-700">
@@ -112,17 +103,17 @@ const FollowUpQuestions = () => {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
-                className="bg-[#089863] h-2 rounded-full transition-all duration-500 ease-out"
+                className="bg-green-600 h-2 rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
           </div>
 
           {/* Question Card */}
-          <div className="bg-white rounded-3xl p-8 sm:p-10 shadow-lg border border-gray-100 mb-10">
+          <div className="bg-white rounded-3xl p-8 sm:p-10 shadow-xl border border-gray-100 mb-10">
             <div className="mb-8">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-10 h-10 bg-[#089863] rounded-2xl flex items-center justify-center text-white font-bold">
+                <div className="w-10 h-10 bg-green-600 rounded-2xl flex items-center justify-center text-white font-bold">
                   {current + 1}
                 </div>
                 <div className="flex-1 h-px bg-gray-200" />
@@ -141,8 +132,9 @@ const FollowUpQuestions = () => {
               />
             </div>
 
-            {/* Navigation Buttons */}
+            {/* Buttons */}
             <div className="flex justify-between items-center">
+              {/* Previous */}
               <button
                 className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition ${
                   current === 0
@@ -156,6 +148,7 @@ const FollowUpQuestions = () => {
                 Previous
               </button>
 
+              {/* Next or Complete */}
               {current < questions.length - 1 ? (
                 <button
                   className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl font-medium transition ${

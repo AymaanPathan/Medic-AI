@@ -1,15 +1,18 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+
 import { useDispatch } from "react-redux";
 import { startChat, generatefollowUpQuestion } from "@/store/slices/chatSlice";
 import { Shield, Sparkles, Stethoscope } from "lucide-react";
 import type { RootDispatch, RootState } from "@/store";
 import { useSelector } from "react-redux";
 import Navbar from "@/components/Navbar";
+import FollowUpQuestions from "./FollowupQuestions";
 
 const SymptomForm = () => {
   const [problem, setProblem] = useState("");
-  const navigate = useNavigate();
+  const [userInfoCompleted, setUserInfoCompleted] = useState(false);
+
   const dispatch: RootDispatch = useDispatch();
   const loading = useSelector((state: RootState) => state.chat.loading);
 
@@ -21,12 +24,11 @@ const SymptomForm = () => {
       generatefollowUpQuestion({ sessionId: "1", userSymptoms: problem })
     );
     if (response.meta.requestStatus === "fulfilled") {
-      navigate("/diagnosis");
+      setUserInfoCompleted(true);
     }
   };
   return (
     <div className="min-h-screen flex">
-      {/* Left: Brand & visuals */}
       <Navbar />
 
       <div className="hidden lg:flex w-2/5 flex-col justify-center items-start px-16 py-12 bg-white border-r border-emerald-100">
@@ -77,11 +79,24 @@ const SymptomForm = () => {
         </div>
       </div>
 
-      <div className="flex items-center justify-center px-8 py-12">
-        <div className="">
-          <div className="bg-white  p-8 relative overflow-hidden">
-            {/* Subtle background pattern */}
-            <div className="absolute top-0 right-0 w-32 h-32rounded-full -translate-y-16 translate-x-16 opacity-50"></div>
+      <div className="flex items-center justify-center px-8 py-12 flex-col w-full">
+        <AnimatePresence>
+          {userInfoCompleted && (
+            <motion.div
+              key="followup-section"
+              initial={{ opacity: 0, y: 0 }}
+              animate={{ opacity: 1, x: 20 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.5 }}
+            >
+              <FollowUpQuestions />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {!userInfoCompleted && (
+          <div className="bg-white p-8 relative overflow-hidden w-full max-w-2xl">
+            <div className="absolute top-0 right-0 w-32 h-32 rounded-full -translate-y-16 translate-x-16 opacity-50"></div>
 
             <div className="space-y-6 relative z-10">
               <div className="text-center space-y-2">
@@ -108,30 +123,19 @@ const SymptomForm = () => {
                 <button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className={`
-                    w-full font-semibold py-4 rounded-2xl transition-all duration-300 shadow-lg transform relative overflow-hidden
-                  ${
+                  className={`w-full font-semibold py-4 rounded-2xl transition-all duration-300 shadow-lg transform relative overflow-hidden ${
                     loading
                       ? "bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg cursor-not-allowed"
                       : "bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white hover:shadow-xl hover:-translate-y-0.5 shadow-emerald-600/25"
-                  }
-                `}
+                  }`}
                 >
                   {loading ? (
                     <div className="flex items-center justify-center space-x-3">
-                      {/* Spinning loader */}
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-
-                      {/* Animated text */}
                       <span className="flex items-center">
                         generating more questions
                         <span className="ml-1">
-                          <span
-                            className="animate-bounce inline-block"
-                            style={{ animationDelay: "0ms" }}
-                          >
-                            .
-                          </span>
+                          <span className="animate-bounce inline-block">.</span>
                           <span
                             className="animate-bounce inline-block"
                             style={{ animationDelay: "150ms" }}
@@ -155,7 +159,6 @@ const SymptomForm = () => {
                           →
                         </div>
                       </span>
-                      {/* Shine effect */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
                     </>
                   )}
@@ -177,7 +180,7 @@ const SymptomForm = () => {
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
