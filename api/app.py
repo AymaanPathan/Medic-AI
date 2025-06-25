@@ -9,6 +9,7 @@ from chat.chat_graph import compiled_graph
 from chat.get_more_question_chain import generate_more_question_chain
 from chat.qa_chain import qa_chain
 from fastapi.middleware.cors import CORSMiddleware
+from Two_way_Chatting.Main.api.api_server import router as stream_router  
 import socketio
 
 from fastapi import UploadFile, File
@@ -19,7 +20,7 @@ from groq import Groq
 allowed_origins = ["http://localhost:5174","http://localhost:5173"]
 # ✅ Step 1: Create FastAPI app for normal HTTP routes
 fastapi_app = FastAPI()
-
+fastapi_app.include_router(stream_router)
 # ✅ Step 2: Add CORS to FastAPI
 fastapi_app.add_middleware(
     CORSMiddleware,
@@ -97,7 +98,6 @@ async def getDiagnosis(data: DiagnosisInput):
     return result
    
 
-
 # ✅ Step 4: Create Socket.IO server
 sio = socketio.AsyncServer(
     async_mode='asgi',
@@ -123,6 +123,7 @@ app = socketio.ASGIApp(
     other_asgi_app=fastapi_app,
     socketio_path="/socket.io"
 )
+
 
 # image and voice
 @fastapi_app.post("/analyze_with_voice_image")

@@ -45,12 +45,6 @@ const navItems = [
     icon: Upload,
     description: "AI-powered medical image analysis",
   },
-  {
-    label: "Telehealth",
-    path: "/consultation",
-    icon: Video,
-    description: "24/7 online medical consultations",
-  },
 ];
 
 const Navbar = () => {
