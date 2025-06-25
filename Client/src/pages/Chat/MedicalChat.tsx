@@ -27,6 +27,7 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { socket } from "@/utils/socketSetup";
 import DiagnosisCard from "./DiagnosisCard";
+import Navbar from "@/components/Navbar";
 
 const ChatInterface = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -85,23 +86,6 @@ const ChatInterface = () => {
         "Hello! I'm your AI medical assistant. I'm here to help you with symptom assessment, health questions, and provide general medical information. How are you feeling today?",
       timestamp: new Date(),
       isWelcome: true,
-    },
-    {
-      id: 2,
-      type: "user",
-      content:
-        "I've been having headaches for the past few days and feeling dizzy sometimes.",
-      timestamp: new Date(),
-      status: "delivered",
-    },
-    {
-      id: 3,
-      type: "assistant",
-      content:
-        "I understand you're experiencing headaches and dizziness. These symptoms can have various causes. To better assist you, I'd like to ask a few questions:\n\n• How would you rate the severity of your headaches on a scale of 1-10?\n• When do they typically occur (morning, evening, after activities)?\n• Have you noticed any triggers?\n• Any changes in your sleep pattern or stress levels recently?",
-      timestamp: new Date(),
-      isQuestion: true,
-      label: "Assessment Questions",
     },
   ]);
 
@@ -260,7 +244,6 @@ const ChatInterface = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex">
-      {/* Sidebar */}
       <div
         className={`
         fixed inset-y-0 left-0 z-50 w-80 bg-white border-r border-gray-200/50 shadow-xl transform transition-transform duration-300 ease-in-out

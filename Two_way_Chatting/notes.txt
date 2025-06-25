@@ -1,0 +1,4 @@
+*** Memory ***
+1. Conversation Buffer Memory
+Stores the entire chat history (messages back and forth) in memory — like a plain chat log.
+stores the entire past message of user and llm both

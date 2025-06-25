@@ -7,6 +7,7 @@ import {
   Menu,
   X,
   Sparkles,
+  MessageCircle,
   Shield,
   Clock,
   Upload,
@@ -18,6 +19,12 @@ const navItems = [
     label: "Home",
     path: "/",
     icon: Brain,
+    description: "Understand how it works",
+  },
+  {
+    label: "chat",
+    path: "/chat",
+    icon: MessageCircle,
     description: "Understand how it works",
   },
   {
