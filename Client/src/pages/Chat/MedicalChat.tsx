@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Stethoscope, Clock, Shield, Send, Plus } from "lucide-react";
+import { socket } from "@/utils/socketSetup";
 
 const MedicalChat = () => {
-  const [messages, setMessages] = useState([
+  const [messages] = useState([
     {
       id: 1,
       sender: "ai",
@@ -32,37 +33,8 @@ const MedicalChat = () => {
     }
   };
 
-  const handleSendMessage = async (
-    e:
-      | React.FormEvent<HTMLFormElement>
-      | React.KeyboardEvent<HTMLTextAreaElement>
-  ) => {
-    e.preventDefault();
-    if (!inputValue.trim() || isProcessing) return;
-
-    const userMessage = {
-      id: messages.length + 1,
-      sender: "user",
-      text: inputValue.trim(),
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInputValue("");
-    setCharCount(0);
-    setIsProcessing(true);
-
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse = {
-        id: messages.length + 2,
-        sender: "ai",
-        text: "Thank you for sharing your symptoms. Based on what you've described, I recommend consulting with a healthcare professional for proper evaluation. In the meantime, here are some general suggestions that might help...",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiResponse]);
-      setIsProcessing(false);
-    }, 2000);
+  const handleSendMessage = async () => {
+    socket.emit("start_stream_answer", "hello");
   };
 
   const formatTime = (timestamp: Date) => {
@@ -72,18 +44,11 @@ const MedicalChat = () => {
     });
   };
 
-  const handleNewChat = () => {
-    setMessages([
-      {
-        id: 1,
-        sender: "ai",
-        text: "Hello! I'm here to help with your medical questions. Please describe your symptoms in detail, and I'll provide guidance based on the information you share.",
-        timestamp: new Date(),
-      },
-    ]);
-    setInputValue("");
-    setCharCount(0);
-  };
+  useEffect(() => {
+    socket.on("stream_answer_chunk", (data) => {
+      console.log(data.text);
+    });
+  });
 
   return (
     <div className="min-h-screen bg-white flex">
@@ -95,7 +60,7 @@ const MedicalChat = () => {
 
         <div className="p-4">
           <button
-            onClick={handleNewChat}
+            // onClick={handleNewChat}
             className="w-full flex items-center space-x-3 px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-2xl transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md"
           >
             <Plus className="w-4 h-4" />
@@ -244,12 +209,7 @@ const MedicalChat = () => {
                 ref={inputRef}
                 value={inputValue}
                 onChange={handleInputChange}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage(e);
-                  }
-                }}
+                onKeyDown={handleSendMessage}
                 placeholder="Describe your symptoms in detail..."
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:bg-white transition-all duration-200 text-sm placeholder-gray-500"
                 rows={3}

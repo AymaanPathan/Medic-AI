@@ -10,14 +10,13 @@ from chat.get_more_question_chain import generate_more_question_chain
 from chat.qa_chain import qa_chain
 from fastapi.middleware.cors import CORSMiddleware
 from Two_way_Chatting.Main.api.api_server import router as stream_router  
-import socketio
-
+from api.socket_config import sio,allowed_origins
 from fastapi import UploadFile, File
 import base64
 from Image_voice_Identifier.Voice_of_doc import text_to_speech_with_elevenlabs
 from groq import Groq
+import socketio
 
-allowed_origins = ["http://localhost:5174","http://localhost:5173"]
 # ✅ Step 1: Create FastAPI app for normal HTTP routes
 fastapi_app = FastAPI()
 fastapi_app.include_router(stream_router)
@@ -99,10 +98,7 @@ async def getDiagnosis(data: DiagnosisInput):
    
 
 # ✅ Step 4: Create Socket.IO server
-sio = socketio.AsyncServer(
-    async_mode='asgi',
-    cors_allowed_origins=allowed_origins
-)
+
 
 @sio.on("start_diagnosis")
 async def handle_diagnosis(sid, data):
