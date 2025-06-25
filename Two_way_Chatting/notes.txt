@@ -2,3 +2,10 @@
 1. Conversation Buffer Memory
 Stores the entire chat history (messages back and forth) in memory — like a plain chat log.
 stores the entire past message of user and llm both
+
+
+2.conversation Summary Memory
+in converstaion buffer memory there is a disadvantage like it stores the entire
+history of user and ai and on longer run or where is time to scale its not
+a good approach so converstion summary [summarize the memory] instead of
+storing the entire memory by llm call internally
