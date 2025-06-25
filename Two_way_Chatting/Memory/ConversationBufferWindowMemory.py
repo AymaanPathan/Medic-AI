@@ -1,5 +1,5 @@
 from langchain.memory import ConversationBufferWindowMemory
-from Two_way_Chatting.model_config import load_llm
+from Two_way_Chatting.Main.model_config import load_llm
 from langchain.chains import ConversationChain
 
 memory = ConversationBufferWindowMemory(k=1,return_messages=True)
