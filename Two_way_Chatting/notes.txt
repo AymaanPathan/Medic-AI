@@ -9,3 +9,20 @@ in converstaion buffer memory there is a disadvantage like it stores the entire
 history of user and ai and on longer run or where is time to scale its not
 a good approach so converstion summary [summarize the memory] instead of
 storing the entire memory by llm call internally
+
+
+3.converstaion window buffer memory
+Stores the kth chat history (messages back and forth) in memory — like a plain chat log.
+and discard or remove all above kth history
+
+
+4.converstaion summary buffer memory
+stores the kth entire history and summarize the remaining history this will
+not dicard it
+
+
+5.entity Memory
+stores the memory based on entity for example [my cats loves fish]
+stores like cat->[emotions]->fish 
+
+
