@@ -3,7 +3,7 @@ import { Stethoscope, Clock, Shield, Send, Plus } from "lucide-react";
 import { socket } from "@/utils/socketSetup";
 
 const MedicalChat = () => {
-  const [messages] = useState([
+  const [messages, setMessages] = useState([
     {
       id: 1,
       sender: "ai",
@@ -25,6 +25,40 @@ const MedicalChat = () => {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleChunk = (chunk: any) => {
+      if (chunk === "[DONE]") {
+        setIsProcessing(false);
+        return;
+      }
+
+      setMessages((prev) => {
+        const updated = [...prev];
+        const lastMessage = updated[updated.length - 1];
+
+        if (lastMessage?.sender === "ai") {
+          lastMessage.text += chunk;
+        } else {
+          updated.push({
+            id: Date.now(),
+            sender: "ai",
+            text: chunk,
+            timestamp: new Date(),
+          });
+        }
+
+        return [...updated];
+      });
+    };
+
+    socket.on("stream_chunk", handleChunk);
+
+    return () => {
+      socket.off("stream_chunk", handleChunk); // ✅ cleanup properly
+    };
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     if (value.length <= 800) {
@@ -33,20 +67,51 @@ const MedicalChat = () => {
     }
   };
 
-  const handleSendMessage = async () => {
-    socket.emit("start_stream_answer", "hello");
+  const sendMessage = () => {
+    if (!inputValue.trim()) return;
+
+    const messageToSend = inputValue.trim();
+    setInputValue("");
+    setIsProcessing(true);
+
+    // Add user message
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        sender: "user",
+        text: messageToSend,
+        timestamp: new Date(),
+      },
+      {
+        id: Date.now() + 1,
+        sender: "ai",
+        text: "", // will append streamed content here
+        timestamp: new Date(),
+      },
+    ]);
+
+    socket.emit("start_stream_answer", messageToSend);
   };
 
-  const formatTime = (timestamp: Date) => {
-    return timestamp.toLocaleTimeString([], {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (!isProcessing) sendMessage();
+    }
+  };
+
+  const formatTime = (timestamp: Date) =>
+    timestamp.toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
+
+  // Rest of the code stays same — no change to rendering JSX
 
   useEffect(() => {
-    socket.on("stream_answer_chunk", (data) => {
-      console.log(data.text);
+    socket.on("stream_chunk", (data) => {
+      console.log(data);
     });
   });
 
@@ -209,7 +274,7 @@ const MedicalChat = () => {
                 ref={inputRef}
                 value={inputValue}
                 onChange={handleInputChange}
-                onKeyDown={handleSendMessage}
+                onKeyDown={handleKeyDown}
                 placeholder="Describe your symptoms in detail..."
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:bg-white transition-all duration-200 text-sm placeholder-gray-500"
                 rows={3}

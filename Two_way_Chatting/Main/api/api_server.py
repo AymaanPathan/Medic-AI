@@ -12,41 +12,19 @@ router = APIRouter()
 # Initialize empty conversation state
 state = {"messages": []}
 
-# Streaming generator
-def stream_model(query: str):
-    state["messages"].append(HumanMessage(content=query))
-    
-    result = graph.invoke(state, config=config, stream_mode="values")
-    
-    state["messages"].append(result["messages"][-1])
 
-    # Yield content chunks
-    for chunk in load_llm.stream(query):
-        yield chunk.content
 
 @sio.on("start_stream_answer")
-async def websocket_stream(websocket: WebSocket):
-    await websocket.accept()
-    try:
-        while True:
-            # Wait for message from frontend
-            data = await websocket.receive_text()
-            print("[RECEIVED]", data)
+async def websocket_stream(sid, data):
+    print("[RECEIVED]", data)
 
-            # Add human message
-            state["messages"].append(HumanMessage(content=data))
-            
-            # Process with graph (update this logic if needed)
-            result = graph.invoke(state, config=config, stream_mode="values")
-            state["messages"].append(result["messages"][-1])
-            
-            # Stream model output
-            async for chunk in load_llm.stream(data):
-                await websocket.send_text(chunk.content)
-                print(f"[EMITTED] Chunk: {chunk.content}")
+    state["messages"].append(HumanMessage(content=data))
+    result = graph.invoke(state, config=config, stream_mode="values")
+    state["messages"].append(result["messages"][-1])
 
-            await websocket.send_text("[DONE]")  # signal end of message
+    for chunk in load_llm.stream(data):
+        await sio.emit("stream_chunk", chunk.content, to=sid)
+        print(f"[EMITTED] Chunk: {chunk.content}")
 
-    except Exception as e:
-        print("WebSocket closed:", e)
-        await websocket.close()
+
+    await sio.emit("stream_chunk", "[DONE]", to=sid)
