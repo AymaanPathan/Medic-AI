@@ -26,8 +26,7 @@ const MedicalChat = () => {
   }, [messages]);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleChunk = (chunk: any) => {
+    const handleChunk = (chunk: string) => {
       if (chunk === "[DONE]") {
         setIsProcessing(false);
         return;
@@ -35,10 +34,13 @@ const MedicalChat = () => {
 
       setMessages((prev) => {
         const updated = [...prev];
-        const lastMessage = updated[updated.length - 1];
+        const lastIndex = updated.length - 1;
 
-        if (lastMessage?.sender === "ai") {
-          lastMessage.text += chunk;
+        if (updated[lastIndex]?.sender === "ai") {
+          updated[lastIndex] = {
+            ...updated[lastIndex],
+            text: updated[lastIndex].text + chunk,
+          };
         } else {
           updated.push({
             id: Date.now(),
@@ -48,14 +50,15 @@ const MedicalChat = () => {
           });
         }
 
-        return [...updated];
+        return updated;
       });
     };
 
+    socket.off("stream_chunk");
     socket.on("stream_chunk", handleChunk);
 
     return () => {
-      socket.off("stream_chunk", handleChunk); // ✅ cleanup properly
+      socket.off("stream_chunk", handleChunk);
     };
   }, []);
 
