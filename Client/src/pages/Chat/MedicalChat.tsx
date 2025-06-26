@@ -86,12 +86,6 @@ const MedicalChat = () => {
         text: messageToSend,
         timestamp: new Date(),
       },
-      {
-        id: Date.now() + 1,
-        sender: "ai",
-        text: "", // will append streamed content here
-        timestamp: new Date(),
-      },
     ]);
 
     socket.emit("start_stream_answer", messageToSend);
