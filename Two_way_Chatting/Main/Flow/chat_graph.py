@@ -5,167 +5,80 @@ from Two_way_Chatting.Main.Flow.model_config import load_llm
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.types import Command
-from fastapi import FastAPI, logger
+from Two_way_Chatting.Main.Flow.MessageFilterModel import MessageFilterResponse, parser
+from fastapi import FastAPI
 
 # Init
 app = FastAPI()
 memory = MemorySaver()
 
-import re
-
-def clean_medical_input(user_input: str) -> tuple[str, bool]:
-    """
-    Classifies segments of the user input and keeps only medical or personal info.
-    Returns cleaned message and whether it contained personal info.
-    """
-    segments = re.split(r"\band\b|[,\.]", user_input.lower())
-    segments = [s.strip() for s in segments if s]
-
-    cleaned = []
-    found_personal = False
-
-    for segment in segments:
-        classification_prompt = f"""
-Classify the following as one of:
-- "Medical" (symptoms, treatments, diseases)
-- "Personal" (name, age, gender)
-- "Non-Medical" (history, trivia, general questions)
-
-Segment: "{segment}"
-
-Respond with just one word: Medical / Personal / Non-Medical
-"""
-        result = load_llm.invoke(classification_prompt).content.strip().lower()
-
-        if result == "medical" or result == "personal":
-            cleaned.append(segment)
-        if result == "personal":
-            found_personal = True
-
-    return ". ".join(cleaned), found_personal
 
 
-def extract_user_info_with_llm(text: str) -> str:
-    prompt = f"""
-    Extract the user's name, age, and gender from the following message.
-
-    Respond ONLY in this exact JSON format:
-    {{
-    "name": string or null,
-    "age": int or null,
-    "gender": string ("male", "female", "other", or null)
-    }}
-
-    User message: "{text}"
-    """
-    response = load_llm.invoke([HumanMessage(content=prompt)])
-    return response.content.strip()
-
-# -------------------- Nodes --------------------
-
-
-# 🧠 Node: Chat with user
-def chat_With_user(state: chat_interface_state):
-    return Command(goto="check_user_question")
 
 def check_user_question_related_to(state: chat_interface_state):
-    user_latest_msg = next((m for m in reversed(state["messages"]) if isinstance(m, HumanMessage)), None)
-    if not user_latest_msg:
-        return Command(
-            update={"messages": [AIMessage(content="Please enter a message so I can assist you.")]},
-            goto=END
-        )
+    last_user_message = ""
+    for message in reversed(state["messages"]):
+        if isinstance(message, HumanMessage):
+            last_user_message = message.content.strip()
+            break
 
-    classification_prompt = f"""
-        Classify the following user message into one of the following categories:
-        - "Medical" (if the message relates to symptoms, diseases, medications, treatments)
-        - "Personal" (if the user shares personal information like name, age, gender, habits, or builds rapport)
-        - "Irrelevant" (if the message is unrelated to healthcare, e.g., trivia, general knowledge)
+    # If there's no message
+    if not last_user_message:
+        return {"allowed": False, "reason": "No valid user message found."}
 
-        Just return one word: "Medical", "Personal", or "Irrelevant".
+    # Sanitize for prompt injection (optional but safe)
+    safe_message = last_user_message.replace('{', '').replace('}', '').replace('\n', ' ').strip()
 
-        Message: "{user_latest_msg.content}"
-    """
+    system_prompt = f"""
+You are a strict message content filter for a medical assistant chatbot.
 
-    VALID_CATEGORIES = {"medical", "personal", "irrelevant"}
+Your job is to ensure that the user's message is either:
+1. Related to **medical symptoms**, medications, diagnosis, health conditions, or
+2. Related to the user's **personal medical information** like age, gender, medical history, or current complaints.
+3. Related to greetings — this should be allowed because it helps build trust.
+
+Any message that is unrelated (e.g. jokes, general knowledge not related to medicine, random questions like weather, politics, etc.) should be flagged as not allowed.
+
+Analyze the user's message carefully.
+
+Return your answer ONLY in the following JSON format:
+
+{parser.get_format_instructions()}
+
+User Current Message: "{safe_message}"
+"""
 
     try:
-        result = load_llm.invoke(classification_prompt).content.strip().lower()
+        result = load_llm.invoke([
+            SystemMessage(content=system_prompt)
+        ])
+        parsed = parser.parse(result.content)
+        return parsed.model_dump()
+
     except Exception as e:
-        # Log error, route to fallback or end
-        logger.error(f"LLM classification failed: {e}")
-        return Command(update={"messages": [AIMessage(content="Sorry, something went wrong while processing your input.")]}, goto=END)
-
-    if result not in VALID_CATEGORIES:
-        # fallback for undefined results
-        logger.warning(f"Unexpected classification output: {result}")
-        return Command(update={"messages": [AIMessage(content="Let's focus on health-related concerns. What symptoms are you experiencing?")]}, goto="chat")
-
-    # Deterministic routing
-    if result in ("medical", "personal"):
-        return Command(update={"classification": result}, goto="continue_medical_flow")
-    else:
-        return Command(goto="non_medical_response")
+        return {
+            "allowed": False,
+            "reason": f"System error while checking message: {str(e)}",
+            "raw_response": getattr(result, "content", "N/A")
+        }
 
 
-# 💊 Node: LLM handles medical response
-def continue_medical_flow(state: chat_interface_state):
-    user_latest_msg = next((m for m in reversed(state["messages"]) if isinstance(m, HumanMessage)), None)
-    user_input = user_latest_msg.content
-    filtered_input, has_personal = clean_medical_input(user_input)
-    
-    if not filtered_input:
-        return Command(
-            update={"messages": [AIMessage(content="Sorry, I can only help with medical-related topics.")]},
-            goto=END
-        )
-    classification = state.get("classification")
 
-    if has_personal:
-        
-        try:
-            info_json = extract_user_info_with_llm(filtered_input)
-            parsed = json.loads(info_json)
+example_state: chat_interface_state = {
+    "messages": [
+        HumanMessage(content="i have cough what is elon musk"),
+        AIMessage(content="Thanks. Are you currently taking any medicines or have any prior conditions like asthma, diabetes, etc?")
+    ],
+    "latest_user_message": "I'm 24, and I also feel body aches.",
+    "user_info": {
+        "name": "Aymaan",
+        "age": 24,
+        "gender": "male"
+    },
+    "symptoms": ["fever", "cough", "body aches"],
+    "medications_taken": [],
+    "medical_history": []
+}
 
-            user_info = state.get("user_info", {})
-            print("personal" , user_info)
-            for k, v in parsed.items():
-                if v is not None:
-                    user_info[k] = v
-            state["user_info"] = user_info
-
-        except Exception as e:
-            pass  # don't fail if info parsing fails
-
-    system_prompt = SystemMessage(content=f"You are a strict, safe medical assistant. User info: {state.get('user_info', {})}")
-    response = load_llm.invoke([system_prompt, HumanMessage(content=filtered_input)])
-
-    return Command(
-        update={"messages": [AIMessage(content=response.content)]},
-        goto="confirm_symptoms_of_user"
-    )
-
-
-# 🚫 Node: Handle non-medical queries
-def non_medical_response(state: chat_interface_state):
-        return Command(
-            update={
-                "messages": [AIMessage(content="Sorry, I can only help with medical-related questions like symptoms, diseases, and treatments.")]
-            },
-            goto=END
-        )
-
-builder = StateGraph(chat_interface_state)
-builder.add_node("chat", chat_With_user)
-builder.set_entry_point("chat")
-
-builder.add_node("check_user_question", check_user_question_related_to)
-builder.add_node("continue_medical_flow", continue_medical_flow)
-builder.add_node("non_medical_response", non_medical_response)
-builder.add_node("confirm_symptoms_of_user", lambda state: Command(goto=END))
-
-
-graph = builder.compile(checkpointer=memory)
-print("Graph Input Schema Annotations:", graph.input_schema.__annotations__)
-
-config = {"configurable": {"thread_id": "1"}}
+res =check_user_question_related_to(example_state)
+print(res)
