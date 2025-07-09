@@ -18,8 +18,14 @@ try:
     )
 
     cursor = connection.cursor()
-
-   
+    create_script = '''Create table chats (
+        id int primary Key,
+        name varchar(20),
+        type Varchar(10)
+    )'''
+    cursor.execute(create_script)
+    connection.commit()
+    
 except Exception as error:
     print("Error while connecting to Databse",error)
 finally:
