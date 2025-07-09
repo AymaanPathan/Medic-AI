@@ -1,2 +1,0 @@
-1. Load Document 
-2. create chunk
