@@ -12,7 +12,7 @@ def set_custom_prompt(prompt_template: str):
 prompt = set_custom_prompt(custom_prompt_template)
 
 
-DB_FAISS_PATH = "../vectorstore/db_faiss"
+DB_FAISS_PATH = "vectorstore/db_faiss"
 embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
 vectorstore = FAISS.load_local(DB_FAISS_PATH, embedding_model, allow_dangerous_deserialization=True)

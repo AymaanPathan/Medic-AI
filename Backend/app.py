@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
-from State import (
+from Backend.State import (
     FinalPromptInput, FinalPromptOutput, InitInput,
     FollowupInput, FollowupAnswers, DiagnosisInput
 )
@@ -10,7 +10,7 @@ from chat.One_Way_Chatting.get_more_question_chain import generate_more_question
 from chat.One_Way_Chatting.qa_chain import qa_chain
 from fastapi.middleware.cors import CORSMiddleware
 from chat.Two_way_Chatting.Main.api.api_server import router as stream_router  
-from socket_config import sio,allowed_origins
+from Backend.socket_config import sio,allowed_origins
 from fastapi import UploadFile, File
 import base64
 from chat.Image_voice_Identifier.Voice_of_doc import text_to_speech_with_elevenlabs
