@@ -5,8 +5,10 @@ from fastapi.routing import APIRouter
 from langchain_core.messages import HumanMessage
 from chat.Two_way_Chatting.Main.Flow.chat_graph import graph
 from Backend.socket_config import sio
-
+from Backend.controllers.tables.add_Chat_tables import chat_messages
+from Backend.controllers.tables.add_Chat_tables import engine
 router = APIRouter()
+from datetime import datetime
 
 logger = logging.getLogger("uvicorn.error")
 session_states = {}
@@ -45,6 +47,11 @@ async def websocket_stream(sid, data):
         # Add user message to session
         session_states[sid]["messages"].append(HumanMessage(content=data))
         session_states[sid]["latest_user_message"] = data
+      
+        saveChat = chat_messages.insert().values(thread_id=2,sender="User", message=data,time_stamp=datetime.now())
+        with engine.connect() as connection:
+            connection.execute(saveChat)
+            connection.commit() 
 
         # Process through medical chat graph
         result = await graph.ainvoke(
@@ -54,7 +61,7 @@ async def websocket_stream(sid, data):
         
         logger.info(f"[RESULT] for {sid}: Processing completed")
 
-        # Extract AI response
+       
         if "messages" in result and result["messages"]:
             ai_msg = result["messages"][-1]
             logger.info(f"[AI MSG] for {sid}: Response ready")
@@ -62,18 +69,31 @@ async def websocket_stream(sid, data):
             # Update session state
             session_states[sid] = result
             
-            # Stream response word by word
+          
             response_text = ai_msg.content
             words = response_text.split(" ")
-            
+            full_answer = "" 
+
             for i, word in enumerate(words):
                 if i == len(words) - 1:
                     await sio.emit("stream_chunk", word, to=sid)
                 else:
                     await sio.emit("stream_chunk", word + " ", to=sid)
-                
-                # Small delay for streaming effect
+
+                full_answer += word + " "
                 await asyncio.sleep(0.05)
+
+            # Now save full_answer after stream completes
+            saveChat = chat_messages.insert().values(
+                thread_id=2,
+                sender="A.I",
+                message=full_answer.strip(),
+                time_stamp=datetime.now()
+            )
+            with engine.connect() as connection:
+                connection.execute(saveChat)
+                connection.commit()
+
             
             # Signal completion
             await sio.emit("stream_chunk", "[DONE]", to=sid)

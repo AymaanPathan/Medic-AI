@@ -20,18 +20,20 @@ chat_thread = Table(
     Column('created_at',DateTime,default=func.now())
 )
 
+add_data_to_chat_thread = chat_thread.insert().values(user="aymaan",created_at=datetime.now())
 
 message_type_enum = Enum("A.I","User",name="message_type", create_type=True)
 chat_messages = Table(
     "chat_messages",
     meta,
     Column('thread_id',Integer,ForeignKey("chat_thread.id",ondelete="CASCADE"),nullable=False),
-    Column('message',message_type_enum,nullable=False),
+    Column('message',String),
+    Column('sender',message_type_enum,nullable=False),
     Column('time_stamp',DateTime,default=func.now())
 )
 
 
 meta.create_all(engine)
-insert_statement = chat_thread.insert().values(id=1,user="Aymaan",created_at=datetime(2024, 12, 25, 15, 30)) 
-with engine.begin() as connection:
-    result =connection.execute(insert_statement)
+with engine.connect() as connection:
+    connection.execute(add_data_to_chat_thread)
+    connection.commit()
