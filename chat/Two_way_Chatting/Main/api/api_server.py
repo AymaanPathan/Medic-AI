@@ -5,8 +5,8 @@ from fastapi.routing import APIRouter
 from langchain_core.messages import HumanMessage
 from chat.Two_way_Chatting.Main.Flow.chat_graph import graph
 from Backend.socket_config import sio
-from Backend.controllers.tables.add_Chat_tables import chat_messages
-from Backend.controllers.tables.add_Chat_tables import engine
+from Backend.tables.add_Chat_tables import chat_messages,chat_thread
+from Backend.tables.add_Chat_tables import engine
 router = APIRouter()
 from datetime import datetime
 
@@ -17,6 +17,25 @@ default_user_info = {
     "age": 0,
     "gender": "unknown"
 }
+
+@sio.on("start_status")
+async def create_new_thread(sid,data):
+    with engine.connect() as conn:
+        result = conn.execute(
+            chat_thread.insert()
+            .values(user="aymaan", created_at=datetime.now())
+            .returning(chat_thread.c.id)
+        )
+        conn.commit()
+        thread_id = result.scalar()
+
+    # Store in session
+    if sid not in session_states:
+        session_states[sid] = default_user_info.copy()
+    session_states[sid]["thread_id"] = thread_id
+
+    await sio.emit("thread_created", {"thread_id": thread_id}, to=sid)
+
 
 # WebSocket streaming handler
 @sio.on("start_stream_answer")
@@ -48,7 +67,7 @@ async def websocket_stream(sid, data):
         session_states[sid]["messages"].append(HumanMessage(content=data))
         session_states[sid]["latest_user_message"] = data
       
-        saveChat = chat_messages.insert().values(thread_id=2,sender="User", message=data,time_stamp=datetime.now())
+        saveChat = chat_messages.insert().values(sender="User", message=data,time_stamp=datetime.now())
         with engine.connect() as connection:
             connection.execute(saveChat)
             connection.commit() 
@@ -85,7 +104,6 @@ async def websocket_stream(sid, data):
 
             # Now save full_answer after stream completes
             saveChat = chat_messages.insert().values(
-                thread_id=2,
                 sender="A.I",
                 message=full_answer.strip(),
                 time_stamp=datetime.now()
