@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { useDispatch } from "react-redux";
 import {
-  startChat,
+  startdiagnosis,
   generatefollowUpQuestion,
 } from "@/store/slices/diagnosis.slice";
 import { Shield, Sparkles, Stethoscope } from "lucide-react";
@@ -22,7 +22,7 @@ const SymptomForm = () => {
   const handleSubmit = async () => {
     if (!problem.trim()) return;
 
-    dispatch(startChat({ sessionId: "1", userSymptoms: problem }));
+    dispatch(startdiagnosis({ sessionId: "1", userSymptoms: problem }));
     const response = await dispatch(
       generatefollowUpQuestion({ sessionId: "1", userSymptoms: problem })
     );

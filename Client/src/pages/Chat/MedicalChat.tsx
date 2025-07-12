@@ -13,10 +13,10 @@ import {
 } from "lucide-react";
 import { socket } from "@/utils/socketSetup";
 import { useDispatch } from "react-redux";
-import type { RootDispatch, RootState } from "@/store";
-import { getFirstThread, storeInitalThread } from "@/store/slices/thread.slice";
-import { useSelector } from "react-redux";
+import type { RootDispatch } from "@/store";
+import { storeInitalThread } from "@/store/slices/thread.slice";
 import { getMessagesByThreadId } from "@/store/slices/chat.slice";
+import { getUsersInitialThreadId } from "@/store/slices/userSlice";
 const MedicalChat = () => {
   const [messages, setMessages] = useState([
     {
@@ -33,9 +33,7 @@ const MedicalChat = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef(null);
   const [sessionStarted, setSessionStarted] = useState(false);
-  const currentThreadId = useSelector(
-    (state: RootState) => state.thread.initialThreadId
-  );
+  const [currentUserThreadId, setCurrentUserThreadId] = useState<number>();
   const handleStartSession = async () => {
     setSessionStarted(true);
     await dispatch(storeInitalThread());
@@ -43,8 +41,13 @@ const MedicalChat = () => {
 
   useEffect(() => {
     const getInitialThread = async () => {
-      const res = await dispatch(getFirstThread());
-      if (res.meta.requestStatus === "fulfilled" && res.payload.id) {
+      const res = await dispatch(getUsersInitialThreadId());
+      setCurrentUserThreadId(res?.payload?.last_selected_thread_id);
+      console.log("Initial thread response:", res);
+      if (
+        res.meta.requestStatus === "fulfilled" &&
+        res.payload.last_selected_thread_id
+      ) {
         setSessionStarted(true);
       }
     };
@@ -57,6 +60,8 @@ const MedicalChat = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  console.log("Current User Thread ID:", currentUserThreadId);
 
   useEffect(() => {
     const handleChunk = (chunk: string) => {
@@ -108,20 +113,18 @@ const MedicalChat = () => {
       const res = await dispatch(getMessagesByThreadId(1));
       if (res.meta.requestStatus === "fulfilled") {
         const msgs = res.payload.map((msg: any, index: number) => ({
-          id: index + 1, // or msg.id if available
+          id: index + 1,
           sender: msg.sender.toLowerCase() === "a.i" ? "ai" : "user",
           text: msg.message,
           timestamp: new Date(msg.time_stamp),
         }));
 
-        // ❌ Don't append: [...prev, ...msgs]
-        // ✅ Replace:
         setMessages(msgs);
       }
     };
 
     fetchMessagesById();
-  }, [currentThreadId, dispatch, sessionStarted]);
+  }, [currentUserThreadId, dispatch]);
 
   const sendMessage = () => {
     if (!inputValue.trim()) return;
@@ -141,7 +144,7 @@ const MedicalChat = () => {
       },
     ]);
 
-    const thread_id = 1;
+    const thread_id = currentUserThreadId;
 
     if (!thread_id) {
       console.error("No thread_id set!");

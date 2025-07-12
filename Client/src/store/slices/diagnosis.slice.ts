@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import type { IChat } from "../../models/chat";
+import type { IDiagnosisResponse } from "../../models/chat";
 import {
   analyzeVoiceAndImage,
   generateFinalPrompt,
@@ -10,7 +10,7 @@ import {
   submitFollowupAnswers,
 } from "../../api/diagnosis.api";
 
-const initialState: IChat = {
+const initialState: IDiagnosisResponse = {
   sessionId: "",
   userSymptoms: "",
   user_info: "",
@@ -23,9 +23,9 @@ const initialState: IChat = {
   error: null,
 };
 
-// 1 Take user symptoms and start a chat session
-export const startChat = createAsyncThunk(
-  "chat/initialize",
+// 1 Take user symptoms and start a diagnosis session
+export const startdiagnosis = createAsyncThunk(
+  "diagnosis/initialize",
   async ({
     sessionId,
     userSymptoms,
@@ -38,9 +38,9 @@ export const startChat = createAsyncThunk(
   }
 );
 
-// 2 Take user personal info and continue the chat session
+// 2 Take user personal info and continue the diagnosis session
 export const getPersonalInfo = createAsyncThunk(
-  "chat/getPersonalInfo",
+  "diagnosis/getPersonalInfo",
   async ({
     sessionId,
     user_info,
@@ -54,7 +54,7 @@ export const getPersonalInfo = createAsyncThunk(
 );
 // 3 Generate follow-up questions based on user info and symptoms
 export const generatefollowUpQuestion = createAsyncThunk(
-  "chat/generateFollowUp",
+  "diagnosis/generateFollowUp",
   async ({
     sessionId,
     userSymptoms,
@@ -69,7 +69,7 @@ export const generatefollowUpQuestion = createAsyncThunk(
 
 // 4. Submit answers to follow-up questions
 export const submitFollowupAnswersThunk = createAsyncThunk(
-  "chat/submitFollowupAnswers",
+  "diagnosis/submitFollowupAnswers",
   async ({
     sessionId,
     user_response,
@@ -83,7 +83,7 @@ export const submitFollowupAnswersThunk = createAsyncThunk(
 );
 
 export const generateFinalPromptThunk = createAsyncThunk(
-  "chat/generateFinalPrompt",
+  "diagnosis/generateFinalPrompt",
   async ({
     sessionId,
     userSymptoms,
@@ -103,7 +103,7 @@ export const generateFinalPromptThunk = createAsyncThunk(
   }
 );
 export const generateLLMAnswer = createAsyncThunk(
-  "chat/generateLLMAnswer",
+  "diagnosis/generateLLMAnswer",
   async ({
     session_id,
     finalPrompt,
@@ -117,7 +117,7 @@ export const generateLLMAnswer = createAsyncThunk(
 );
 
 export const analyzeImageAndVoiceThunk = createAsyncThunk(
-  "chat/analyzeImageAndVoice",
+  "diagnosis/analyzeImageAndVoice",
   async (
     {
       imageFile,
@@ -140,22 +140,22 @@ export const analyzeImageAndVoiceThunk = createAsyncThunk(
   }
 );
 
-const chatSlice = createSlice({
+const diagnosisSlice = createSlice({
   name: "diagnosis",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(startChat.pending, (state) => {
+      .addCase(startdiagnosis.pending, (state) => {
         state.loading = true;
       })
-      .addCase(startChat.fulfilled, (state, action) => {
+      .addCase(startdiagnosis.fulfilled, (state, action) => {
         state.sessionId = action.payload.sessionId;
         state.userSymptoms = action.payload.userSymptoms;
       })
-      .addCase(startChat.rejected, (state, action) => {
+      .addCase(startdiagnosis.rejected, (state, action) => {
         state.loading = false;
-        console.error("Failed to start chat:", action.error.message);
+        console.error("Failed to start diagnosis:", action.error.message);
       })
       .addCase(getPersonalInfo.pending, (state) => {
         state.loading = true;
@@ -206,4 +206,4 @@ const chatSlice = createSlice({
   },
 });
 
-export default chatSlice.reducer;
+export default diagnosisSlice.reducer;

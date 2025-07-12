@@ -1,4 +1,4 @@
-import { createInitialThread, getInitialState } from "@/api/thread.api";
+import { createInitialThread } from "@/api/thread.api";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 interface ThreadResponse {
@@ -13,23 +13,13 @@ const initialState: ThreadResponse = {
   error: null,
 };
 
-export const storeInitalThread = createAsyncThunk(
-  "chat/startChat",
-  async () => {
-    const response = await createInitialThread();
-    return response;
-  }
-);
-export const getFirstThread = createAsyncThunk(
-  "chat/getFirstThread",
-  async () => {
-    const response = await getInitialState();
-    return response.data;
-  }
-);
+export const storeInitalThread = createAsyncThunk("thread/store", async () => {
+  const response = await createInitialThread();
+  return response.data;
+});
 
-const chatSlice = createSlice({
-  name: "chat",
+const threadSlice = createSlice({
+  name: "thread",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
@@ -40,25 +30,13 @@ const chatSlice = createSlice({
       })
       .addCase(storeInitalThread.fulfilled, (state, action) => {
         state.loading = false;
-        state.initialThreadId = action.payload.data.inserted_id;
+        state.initialThreadId = action.payload.inserted_id;
       })
       .addCase(storeInitalThread.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to create initial thread";
-      })
-      .addCase(getFirstThread.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getFirstThread.fulfilled, (state, action) => {
-        state.loading = false;
-        state.initialThreadId = action.payload.data || null;
-      })
-      .addCase(getFirstThread.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || "Failed to fetch initial thread";
       });
   },
 });
 
-export default chatSlice.reducer;
+export default threadSlice.reducer;

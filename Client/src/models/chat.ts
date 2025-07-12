@@ -1,4 +1,4 @@
-export interface IChat {
+export interface IDiagnosisResponse {
   sessionId: string;
   userSymptoms: string;
   user_info: string;

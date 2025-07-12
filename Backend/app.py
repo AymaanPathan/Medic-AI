@@ -6,7 +6,8 @@ from Backend.State import (
 )
 from Backend.routes.chat.chat_router import router as chat_router
 from Backend.routes.thread.thread_router import router as thread_router
-from fastapi.responses import StreamingResponse
+from Backend.routes.users.user_router import router as user_router
+
 from chat.One_Way_Chatting.chat_graph import compiled_graph
 from chat.One_Way_Chatting.get_more_question_chain import generate_more_question_chain
 from chat.One_Way_Chatting.qa_chain import qa_chain
@@ -24,6 +25,7 @@ fastapi_app = FastAPI()
 fastapi_app.include_router(stream_router)
 fastapi_app.include_router(chat_router)
 fastapi_app.include_router(thread_router)
+fastapi_app.include_router(user_router)
 # ✅ Step 2: Add CORS to FastAPI
 fastapi_app.add_middleware(
     CORSMiddleware,
