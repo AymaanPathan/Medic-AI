@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
-import chatSlice from "./slices/chatSlice";
-import threadSlice from "./slices/threadSlice";
+import chatSlice from "./slices/diagnosis.slice";
+import threadSlice from "./slices/thread.slice";
 export const store = configureStore({
   reducer: {
     chat: chatSlice,

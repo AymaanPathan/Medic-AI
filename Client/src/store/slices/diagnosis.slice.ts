@@ -8,7 +8,7 @@ import {
   getUserPersonalInfo,
   getUserSymptoms,
   submitFollowupAnswers,
-} from "../../api/chat.api";
+} from "../../api/diagnosis.api";
 
 const initialState: IChat = {
   sessionId: "",
@@ -141,14 +141,13 @@ export const analyzeImageAndVoiceThunk = createAsyncThunk(
 );
 
 const chatSlice = createSlice({
-  name: "chat",
+  name: "diagnosis",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(startChat.pending, (state) => {
         state.loading = true;
-        console.log("Starting chat session...");
       })
       .addCase(startChat.fulfilled, (state, action) => {
         state.sessionId = action.payload.sessionId;
@@ -160,7 +159,6 @@ const chatSlice = createSlice({
       })
       .addCase(getPersonalInfo.pending, (state) => {
         state.loading = true;
-        console.log("Fetching personal info...");
       })
       .addCase(getPersonalInfo.fulfilled, (state, action) => {
         state.user_info = action.payload.user_info;
@@ -171,7 +169,6 @@ const chatSlice = createSlice({
       })
       .addCase(generatefollowUpQuestion.pending, (state) => {
         state.loading = true;
-        console.log("Generating follow-up questions...");
       })
       .addCase(generatefollowUpQuestion.fulfilled, (state, action) => {
         state.followupQuestions = action.payload.followupQuestions;
@@ -189,7 +186,6 @@ const chatSlice = createSlice({
         state.finalPrompt = action.payload.formatted_response;
       })
       .addCase(generateFinalPromptThunk.fulfilled, (state, action) => {
-        console.log("Final prompt generated:", action.payload);
         state.finalPrompt = action.payload.final_prompt;
       })
       .addCase(generateLLMAnswer.fulfilled, (state, action) => {

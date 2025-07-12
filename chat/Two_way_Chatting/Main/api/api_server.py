@@ -42,17 +42,22 @@ async def create_new_thread(sid,data):
 async def websocket_stream(sid, data):
     """
     WebSocket streaming handler for real-time medical chat
+    Expects: data = { "thread_id": int, "message": str }
     """
     logger.info(f"[RECEIVED] from {sid}: {repr(data)}")
 
-    # Validate input
-    if not data or not data.strip():
-        await sio.emit("stream_chunk", "Please enter a valid message.", to=sid)
+    # ✅ Extract thread_id and message from incoming data
+    thread_id = data.get("thread_id")
+    message = data.get("message")
+
+    # 🔐 Validate input
+    if not message or not str(message).strip() or not thread_id:
+        await sio.emit("stream_chunk", "⚠️ Please send both thread_id and message.", to=sid)
         await sio.emit("stream_chunk", "[DONE]", to=sid)
         return
 
     try:
-        # Initialize session state if not exists
+        # ✅ Ensure session state exists
         if sid not in session_states:
             session_states[sid] = {
                 "messages": [],
@@ -63,74 +68,77 @@ async def websocket_stream(sid, data):
                 "medical_history": []
             }
 
-        # Add user message to session
-        session_states[sid]["messages"].append(HumanMessage(content=data))
-        session_states[sid]["latest_user_message"] = data
-      
-        saveChat = chat_messages.insert().values(sender="User", message=data,time_stamp=datetime.now())
-        with engine.connect() as connection:
-            connection.execute(saveChat)
-            connection.commit() 
+        # ✅ Store message in memory (for LLM flow)
+        session_states[sid]["messages"].append(HumanMessage(content=message))
+        session_states[sid]["latest_user_message"] = message
 
-        # Process through medical chat graph
+        # ✅ Save user message to DB
+        with engine.connect() as connection:
+            connection.execute(
+                chat_messages.insert().values(
+                    thread_id=thread_id,
+                    sender="User",
+                    message=message,
+                    time_stamp=datetime.now()
+                )
+            )
+            connection.commit()
+
+        # ✅ Process via LangGraph
         result = await graph.ainvoke(
             session_states[sid],
-            config={"configurable": {"thread_id": sid}}
+            config={"configurable": {"thread_id": thread_id}}
         )
-        
+
         logger.info(f"[RESULT] for {sid}: Processing completed")
 
-       
+        # ✅ Extract AI reply
         if "messages" in result and result["messages"]:
             ai_msg = result["messages"][-1]
-            logger.info(f"[AI MSG] for {sid}: Response ready")
+            response_text = ai_msg.content.strip()
+            logger.info(f"[AI MSG] for {sid}: {response_text}")
 
-            # Update session state
+            # ✅ Update memory
             session_states[sid] = result
-            
-          
-            response_text = ai_msg.content
+
+            # ✅ Emit streamed chunks
             words = response_text.split(" ")
-            full_answer = "" 
-
+            full_answer = ""
             for i, word in enumerate(words):
-                if i == len(words) - 1:
-                    await sio.emit("stream_chunk", word, to=sid)
-                else:
-                    await sio.emit("stream_chunk", word + " ", to=sid)
-
+                await sio.emit("stream_chunk", word if i == len(words) - 1 else word + " ", to=sid)
                 full_answer += word + " "
                 await asyncio.sleep(0.05)
 
-            # Now save full_answer after stream completes
-            saveChat = chat_messages.insert().values(
-                sender="A.I",
-                message=full_answer.strip(),
-                time_stamp=datetime.now()
-            )
+            # ✅ Save AI message to DB
             with engine.connect() as connection:
-                connection.execute(saveChat)
+                connection.execute(
+                    chat_messages.insert().values(
+                        thread_id=thread_id,
+                        sender="A.I",
+                        message=full_answer.strip(),
+                        time_stamp=datetime.now()
+                    )
+                )
                 connection.commit()
 
-            
-            # Signal completion
+            # ✅ Finish
             await sio.emit("stream_chunk", "[DONE]", to=sid)
-            
-            # Send extracted medical information
+
+            # ✅ Send extracted info
             await sio.emit("medical_info_update", {
                 "symptoms": result.get("symptoms", []),
                 "medications": result.get("medications_taken", []),
                 "medical_history": result.get("medical_history", []),
                 "user_info": result.get("user_info", {})
             }, to=sid)
-            
+
         else:
-            await sio.emit("stream_chunk", "I apologize, but I couldn't generate a response. Please try again.", to=sid)
+            await sio.emit("stream_chunk", "⚠️ Sorry, I couldn't generate a reply. Try again.", to=sid)
             await sio.emit("stream_chunk", "[DONE]", to=sid)
 
     except Exception as e:
         logger.error(f"[GRAPH ERROR] for {sid}: {str(e)}")
-        await sio.emit("stream_chunk", "I'm experiencing technical difficulties. Please try again.", to=sid)
+        await sio.emit("stream_chunk", "🚨 Server error. Please try again.", to=sid)
         await sio.emit("stream_chunk", "[DONE]", to=sid)
 
 # Additional WebSocket events

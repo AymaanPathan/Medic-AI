@@ -5,10 +5,9 @@ import type { RootDispatch, RootState } from "@/store";
 import {
   generateFinalPromptThunk,
   submitFollowupAnswersThunk,
-} from "@/store/slices/chatSlice";
+} from "@/store/slices/diagnosis.slice";
 import { socket } from "@/utils/socketSetup";
 import { useNavigate } from "react-router";
-import Navbar from "@/components/Navbar";
 
 const FollowUpQuestions = () => {
   const [current, setCurrent] = useState(0);
@@ -56,8 +55,6 @@ const FollowUpQuestions = () => {
       usersAnswers[question] = answers[index] || "";
     });
 
-    console.log("Final answers:", usersAnswers);
-
     const response = await dispatch(
       submitFollowupAnswersThunk({
         sessionId: "1",
@@ -81,11 +78,6 @@ const FollowUpQuestions = () => {
       navigate("/chat");
     }
   };
-
-  console.log(
-    "User additional follow-up answers:",
-    userAdditionalFollowupAnswer
-  );
 
   return (
     <div className="min-h-screen flex flex-col w-full">

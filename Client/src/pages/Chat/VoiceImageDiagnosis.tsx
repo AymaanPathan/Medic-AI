@@ -1,5 +1,5 @@
 import type { RootDispatch, RootState } from "@/store";
-import { analyzeImageAndVoiceThunk } from "@/store/slices/chatSlice";
+import { analyzeImageAndVoiceThunk } from "@/store/slices/diagnosis.slice";
 import React, { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {

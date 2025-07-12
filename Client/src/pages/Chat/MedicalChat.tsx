@@ -13,8 +13,10 @@ import {
 } from "lucide-react";
 import { socket } from "@/utils/socketSetup";
 import { useDispatch } from "react-redux";
-import type { RootDispatch } from "@/store";
-import { getFirstThread, storeInitalThread } from "@/store/slices/threadSlice";
+import type { RootDispatch, RootState } from "@/store";
+import { getFirstThread, storeInitalThread } from "@/store/slices/thread.slice";
+import { useSelector } from "react-redux";
+import { getMessagesByThreadId } from "@/store/slices/chat.slice";
 const MedicalChat = () => {
   const [messages, setMessages] = useState([
     {
@@ -31,7 +33,9 @@ const MedicalChat = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef(null);
   const [sessionStarted, setSessionStarted] = useState(false);
-
+  const currentThreadId = useSelector(
+    (state: RootState) => state.thread.initialThreadId
+  );
   const handleStartSession = async () => {
     setSessionStarted(true);
     await dispatch(storeInitalThread());
@@ -43,7 +47,6 @@ const MedicalChat = () => {
       if (res.meta.requestStatus === "fulfilled" && res.payload.id) {
         setSessionStarted(true);
       }
-      console.log(res);
     };
     getInitialThread();
   }, [dispatch]);
@@ -100,6 +103,26 @@ const MedicalChat = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchMessagesById = async () => {
+      const res = await dispatch(getMessagesByThreadId(1));
+      if (res.meta.requestStatus === "fulfilled") {
+        const msgs = res.payload.map((msg: any, index: number) => ({
+          id: index + 1, // or msg.id if available
+          sender: msg.sender.toLowerCase() === "a.i" ? "ai" : "user",
+          text: msg.message,
+          timestamp: new Date(msg.time_stamp),
+        }));
+
+        // ❌ Don't append: [...prev, ...msgs]
+        // ✅ Replace:
+        setMessages(msgs);
+      }
+    };
+
+    fetchMessagesById();
+  }, [currentThreadId, dispatch, sessionStarted]);
+
   const sendMessage = () => {
     if (!inputValue.trim()) return;
 
@@ -107,7 +130,7 @@ const MedicalChat = () => {
     setInputValue("");
     setIsProcessing(true);
 
-    // Add user message
+    // Add user message to UI
     setMessages((prev) => [
       ...prev,
       {
@@ -118,7 +141,18 @@ const MedicalChat = () => {
       },
     ]);
 
-    socket.emit("start_stream_answer", messageToSend);
+    const thread_id = 1;
+
+    if (!thread_id) {
+      console.error("No thread_id set!");
+      return;
+    }
+
+    // ✅ Send proper structured payload
+    socket.emit("start_stream_answer", {
+      thread_id,
+      message: messageToSend,
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -328,9 +362,9 @@ const MedicalChat = () => {
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-50">
           <div className="max-w-4xl mx-auto space-y-3">
-            {messages.map((message) => (
+            {messages.map((message, index: number) => (
               <div
-                key={message.id}
+                key={index}
                 className={`flex ${
                   message.sender === "user" ? "justify-end" : "justify-start"
                 }`}

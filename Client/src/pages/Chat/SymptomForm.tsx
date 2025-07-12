@@ -2,7 +2,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useDispatch } from "react-redux";
-import { startChat, generatefollowUpQuestion } from "@/store/slices/chatSlice";
+import {
+  startChat,
+  generatefollowUpQuestion,
+} from "@/store/slices/diagnosis.slice";
 import { Shield, Sparkles, Stethoscope } from "lucide-react";
 import type { RootDispatch, RootState } from "@/store";
 import { useSelector } from "react-redux";
