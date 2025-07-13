@@ -37,3 +37,5 @@ meta.create_all(engine)
 with engine.connect() as connection:
     connection.execute(add_data_to_chat_thread)
     connection.commit()
+
+
