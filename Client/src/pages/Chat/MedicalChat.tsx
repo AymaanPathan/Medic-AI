@@ -13,10 +13,15 @@ import {
 } from "lucide-react";
 import { socket } from "@/utils/socketSetup";
 import { useDispatch } from "react-redux";
-import type { RootDispatch } from "@/store";
+import type { RootDispatch, RootState } from "@/store";
 import { storeInitalThread } from "@/store/slices/thread.slice";
-import { getMessagesByThreadId } from "@/store/slices/chat.slice";
+import {
+  getMessageForSideBar,
+  getMessagesByThreadId,
+} from "@/store/slices/chat.slice";
 import { getUsersInitialThreadId } from "@/store/slices/userSlice";
+import { useSelector } from "react-redux";
+import Sidebar from "./SideBar";
 const MedicalChat = () => {
   const [messages, setMessages] = useState([
     {
@@ -32,6 +37,10 @@ const MedicalChat = () => {
   const [charCount, setCharCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef(null);
+  const messageForSideBar = useSelector(
+    (state: RootState) => state.chat.sidebarMessage
+  );
+  console.log("Sidebar Messages:", messageForSideBar);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [currentUserThreadId, setCurrentUserThreadId] = useState<number>();
   const handleStartSession = async () => {
@@ -179,6 +188,10 @@ const MedicalChat = () => {
     });
   });
 
+  useEffect(() => {
+    dispatch(getMessageForSideBar());
+  }, [dispatch]);
+
   if (!sessionStarted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center relative overflow-hidden">
@@ -315,6 +328,7 @@ const MedicalChat = () => {
     <div className="min-h-screen bg-white flex">
       {/* Sidebar */}
       <div className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
+        {/* Sidebar Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center">
@@ -329,19 +343,14 @@ const MedicalChat = () => {
           </div>
         </div>
 
-        <div className="p-4">
-          <button
-            // onClick={handleNewChat}
-            className="w-full flex items-center space-x-3 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md transform hover:scale-105"
-          >
-            <Plus className="w-4 h-4" />
-            <span>New Consultation</span>
-          </button>
+        {/* Sidebar Content */}
+        <div className="flex-auto h-screen overflow-y-scroll scrollbar-thin ">
+          <Sidebar />
         </div>
       </div>
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col bg-white">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col bg-white min-w-0">
         {/* Chat Header */}
         <div className="px-6 py-4 bg-gradient-to-r from-emerald-50 via-white to-teal-50 border-b border-gray-100">
           <div className="flex items-center justify-between">
@@ -365,7 +374,7 @@ const MedicalChat = () => {
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-50">
           <div className="max-w-4xl mx-auto space-y-3">
-            {messages.map((message, index: number) => (
+            {messages.map((message, index) => (
               <div
                 key={index}
                 className={`flex ${
