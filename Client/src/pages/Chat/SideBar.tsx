@@ -1,159 +1,34 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Plus,
   MessageCircle,
   Clock,
-  Star,
-  Settings,
-  User,
-  Search,
   MoreHorizontal,
   Trash2,
   Edit3,
-  Pin,
 } from "lucide-react";
+import type { RootState } from "@/store";
+import { useSelector } from "react-redux";
+import type { IMessage } from "@/types/interfaces";
 
 const Sidebar = () => {
   const [activeChat, setActiveChat] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [hoveredChat, setHoveredChat] = useState(null);
-
-  const chatHistory = [
-    {
-      id: 1,
-      title: "Medical Consultation Query",
-      preview: "Can you help me understand my symptoms?",
-      timestamp: "2 hours ago",
-      isPinned: true,
-      isStarred: false,
-    },
-    {
-      id: 2,
-      title: "Dietary Recommendations",
-      preview: "What foods should I avoid with diabetes?",
-      timestamp: "Yesterday",
-      isPinned: false,
-      isStarred: true,
-    },
-    {
-      id: 3,
-      title: "Exercise Routine Planning",
-      preview: "Help me create a workout schedule",
-      timestamp: "2 days ago",
-      isPinned: false,
-      isStarred: false,
-    },
-    {
-      id: 4,
-      title: "Sleep Health Assessment",
-      preview: "I've been having trouble sleeping lately",
-      timestamp: "3 days ago",
-      isPinned: false,
-      isStarred: false,
-    },
-    {
-      id: 5,
-      title: "Stress Management Tips",
-      preview: "How can I reduce work-related stress?",
-      timestamp: "1 week ago",
-      isPinned: false,
-      isStarred: false,
-    },
-    {
-      id: 6,
-      title: "Medication Information",
-      preview: "Tell me about potential side effects",
-      timestamp: "1 week ago",
-      isPinned: false,
-      isStarred: false,
-    },
-    {
-      id: 7,
-      title: "Nutrition Guidance",
-      preview: "What vitamins should I take daily?",
-      timestamp: "1 week ago",
-      isPinned: false,
-      isStarred: false,
-    },
-    {
-      id: 8,
-      title: "Mental Health Support",
-      preview: "Dealing with anxiety and depression",
-      timestamp: "2 weeks ago",
-      isPinned: false,
-      isStarred: false,
-    },
-    {
-      id: 9,
-      title: "Physical Therapy Questions",
-      preview: "Exercises for back pain relief",
-      timestamp: "2 weeks ago",
-      isPinned: false,
-      isStarred: false,
-    },
-    {
-      id: 10,
-      title: "Preventive Care Planning",
-      preview: "What health screenings do I need?",
-      timestamp: "3 weeks ago",
-      isPinned: false,
-      isStarred: false,
-    },
-    {
-      id: 11,
-      title: "Allergy Management",
-      preview: "How to manage seasonal allergies",
-      timestamp: "3 weeks ago",
-      isPinned: false,
-      isStarred: false,
-    },
-    {
-      id: 12,
-      title: "Skin Care Consultation",
-      preview: "Treatment for acne and skin issues",
-      timestamp: "1 month ago",
-      isPinned: false,
-      isStarred: false,
-    },
-    {
-      id: 13,
-      title: "Heart Health Assessment",
-      preview: "Understanding cholesterol levels",
-      timestamp: "1 month ago",
-      isPinned: false,
-      isStarred: false,
-    },
-    {
-      id: 14,
-      title: "Weight Management Plan",
-      preview: "Healthy weight loss strategies",
-      timestamp: "1 month ago",
-      isPinned: false,
-      isStarred: false,
-    },
-    {
-      id: 15,
-      title: "Women's Health Topics",
-      preview: "Hormonal health questions",
-      timestamp: "2 months ago",
-      isPinned: false,
-      isStarred: false,
-    },
-  ];
+  const messageForSideBar = useSelector(
+    (state: RootState) => state.chat.sidebarMessage
+  );
+  console.log("Sidebar messages:", messageForSideBar);
 
   const handleNewChat = () => {
     setActiveChat(null);
     console.log("Starting new consultation...");
   };
 
-  const filteredChats = chatHistory.filter(
-    (chat) =>
-      chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      chat.preview.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredChats = messageForSideBar.filter((chat: IMessage) =>
+    chat.message.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const pinnedChats = filteredChats.filter((chat) => chat.isPinned);
-  const regularChats = filteredChats.filter((chat) => !chat.isPinned);
+  console.log("messageForSideBar:", messageForSideBar);
 
   const ChatItem = ({ chat }) => (
     <div
@@ -162,7 +37,7 @@ const Sidebar = () => {
           ? "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200 shadow-sm"
           : "hover:bg-gradient-to-r hover:from-gray-50 hover:to-emerald-50"
       }`}
-      onMouseEnter={() => setHoveredChat(chat.id)}
+      onMouseEnter={() => setHoveredChat(chat.thread_id)}
       onMouseLeave={() => setHoveredChat(null)}
     >
       <div className="flex items-start space-x-3">
@@ -183,27 +58,21 @@ const Sidebar = () => {
                 activeChat === chat.id ? "text-emerald-900" : "text-gray-900"
               }`}
             >
-              {chat.title}
+              {chat.message}
             </h3>
           </div>
-
-          <p
-            className={`text-xs truncate mb-2 ${
-              activeChat === chat.id ? "text-emerald-700" : "text-gray-600"
-            }`}
-          >
-            {chat.preview}
-          </p>
 
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-1">
               <Clock className="w-3 h-3 text-gray-400" />
-              <span className="text-xs text-gray-500">{chat.timestamp}</span>
+              <span className="text-xs text-gray-500">
+                {new Date(chat.time_stamp).toLocaleString()}
+              </span>
             </div>
 
             <div
               className={`flex items-center space-x-1 transition-all duration-200 ${
-                hoveredChat === chat.id ? "opacity-100" : "opacity-0"
+                hoveredChat === chat.thread_id ? "opacity-100" : "opacity-0"
               }`}
             >
               <button className="p-1 hover:bg-emerald-100 rounded-lg transition-colors">
@@ -237,13 +106,13 @@ const Sidebar = () => {
 
       {/* Enhanced Scrollable Area with Tailwind Scrollbar */}
       <div className="flex-1 overflow-y-auto px-4 py-3 custom-scrollbar">
-        {regularChats.length > 0 && (
+        {filteredChats.length > 0 && (
           <div>
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
               Recent
             </h3>
-            {regularChats.map((chat) => (
-              <ChatItem key={chat.id} chat={chat} />
+            {filteredChats.map((chat, index) => (
+              <ChatItem key={index} chat={chat} />
             ))}
           </div>
         )}

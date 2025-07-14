@@ -37,10 +37,7 @@ const MedicalChat = () => {
   const [charCount, setCharCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef(null);
-  const messageForSideBar = useSelector(
-    (state: RootState) => state.chat.sidebarMessage
-  );
-  console.log("Sidebar Messages:", messageForSideBar);
+
   const [sessionStarted, setSessionStarted] = useState(false);
   const [currentUserThreadId, setCurrentUserThreadId] = useState<number>();
   const handleStartSession = async () => {

@@ -79,9 +79,9 @@ export type Diagnosis = {
   dangerSigns?: string[];
 };
 
-export type Message = {
-  id: number;
-  type: string;
+export type IMessage = {
+  message: string;
+  sender: string;
   content: string | Diagnosis;
-  timestamp: Date;
+  time_stamp: Date;
 };
