@@ -60,7 +60,7 @@ const chatSlice = createSlice({
     addUserMessage: (state, action) => {
       state.message.push({
         id: Date.now(),
-        sender: "User", // <-- Match backend casing
+        sender: "User",
         text: action.payload,
         time_stamp: new Date().toISOString(),
       });

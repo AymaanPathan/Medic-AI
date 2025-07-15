@@ -82,6 +82,5 @@ export type Diagnosis = {
 export type IMessage = {
   message: string;
   sender: string;
-  content: string | Diagnosis;
   time_stamp: Date;
 };

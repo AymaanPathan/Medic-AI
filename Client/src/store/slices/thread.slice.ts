@@ -1,14 +1,17 @@
+// thread.slice.ts
 import { createInitialThread } from "@/api/thread.api";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-interface ThreadResponse {
+interface ThreadState {
   initialThreadId: string | null;
+  currentUserThreadId: number | null;
   loading: boolean;
   error: string | null;
 }
 
-const initialState: ThreadResponse = {
+const initialState: ThreadState = {
   initialThreadId: null,
+  currentUserThreadId: null,
   loading: false,
   error: null,
 };
@@ -21,7 +24,11 @@ export const storeInitalThread = createAsyncThunk("thread/store", async () => {
 const threadSlice = createSlice({
   name: "thread",
   initialState,
-  reducers: {},
+  reducers: {
+    setCurrentUserThreadId: (state, action) => {
+      state.currentUserThreadId = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(storeInitalThread.pending, (state) => {
@@ -39,4 +46,5 @@ const threadSlice = createSlice({
   },
 });
 
+export const { setCurrentUserThreadId } = threadSlice.actions;
 export default threadSlice.reducer;

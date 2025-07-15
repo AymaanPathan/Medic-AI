@@ -9,32 +9,26 @@ import {
 } from "lucide-react";
 import type { RootDispatch, RootState } from "@/store";
 import { useDispatch, useSelector } from "react-redux";
-import type { IMessage } from "@/types/interfaces";
 import { getMessagesByThreadId } from "@/store/slices/chat.slice";
+import { setCurrentUserThreadId } from "@/store/slices/thread.slice";
 
 const Sidebar = () => {
   const [activeChat, setActiveChat] = useState(null);
   const dispatch: RootDispatch = useDispatch();
-  const [searchQuery, setSearchQuery] = useState("");
   const [hoveredChat, setHoveredChat] = useState(null);
   const messageForSideBar = useSelector(
     (state: RootState) => state.chat.sidebarMessage
   );
-  console.log("Sidebar messages:", messageForSideBar);
 
   const handleNewChat = () => {
     setActiveChat(null);
-    console.log("Starting new consultation...");
   };
   const getMessagesBySideBarId = async (thread_id: number) => {
-    const res = await dispatch(getMessagesByThreadId(thread_id));
-    console.log("Fetched messages for thread:", res);
+    await dispatch(getMessagesByThreadId(thread_id));
+    dispatch(setCurrentUserThreadId(thread_id));
   };
 
-  const filteredChats = messageForSideBar.filter((chat: IMessage) =>
-    chat.message.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  console.log("messageForSideBar:", messageForSideBar);
+  const filteredChats = messageForSideBar;
 
   const ChatItem = ({ chat }) => (
     <div
@@ -126,20 +120,6 @@ const Sidebar = () => {
             {filteredChats.map((chat, index) => (
               <ChatItem key={index} chat={chat} />
             ))}
-          </div>
-        )}
-
-        {filteredChats.length === 0 && (
-          <div className="text-center py-12">
-            <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-sm font-medium text-gray-500 mb-2">
-              {searchQuery ? "No conversations found" : "No conversations yet"}
-            </h3>
-            <p className="text-xs text-gray-400 max-w-48 mx-auto">
-              {searchQuery
-                ? "Try adjusting your search terms"
-                : "Start a new consultation to begin your health journey"}
-            </p>
           </div>
         )}
       </div>

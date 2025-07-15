@@ -13,7 +13,10 @@ import {
 import { socket } from "@/utils/socketSetup";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootDispatch, RootState } from "@/store";
-import { storeInitalThread } from "@/store/slices/thread.slice";
+import {
+  setCurrentUserThreadId,
+  storeInitalThread,
+} from "@/store/slices/thread.slice";
 import {
   addUserMessage,
   appendAiChunk,
@@ -31,9 +34,10 @@ const MedicalChat = () => {
   const [charCount, setCharCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef(null);
-
+  const currentUserThreadId = useSelector(
+    (state: RootState) => state.thread.currentUserThreadId
+  );
   const [sessionStarted, setSessionStarted] = useState(false);
-  const [currentUserThreadId, setCurrentUserThreadId] = useState<number>();
   const handleStartSession = async () => {
     setSessionStarted(true);
     await dispatch(storeInitalThread());
@@ -42,8 +46,7 @@ const MedicalChat = () => {
   useEffect(() => {
     const getInitialThread = async () => {
       const res = await dispatch(getUsersInitialThreadId());
-      setCurrentUserThreadId(res?.payload?.last_selected_thread_id);
-      console.log("Initial thread response:", res);
+      dispatch(setCurrentUserThreadId(res?.payload?.last_selected_thread_id));
       if (
         res.meta.requestStatus === "fulfilled" &&
         res.payload.last_selected_thread_id
