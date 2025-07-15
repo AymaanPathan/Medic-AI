@@ -7,12 +7,14 @@ import {
   Trash2,
   Edit3,
 } from "lucide-react";
-import type { RootState } from "@/store";
-import { useSelector } from "react-redux";
+import type { RootDispatch, RootState } from "@/store";
+import { useDispatch, useSelector } from "react-redux";
 import type { IMessage } from "@/types/interfaces";
+import { getMessagesByThreadId } from "@/store/slices/chat.slice";
 
 const Sidebar = () => {
   const [activeChat, setActiveChat] = useState(null);
+  const dispatch: RootDispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState("");
   const [hoveredChat, setHoveredChat] = useState(null);
   const messageForSideBar = useSelector(
@@ -23,6 +25,10 @@ const Sidebar = () => {
   const handleNewChat = () => {
     setActiveChat(null);
     console.log("Starting new consultation...");
+  };
+  const getMessagesBySideBarId = async (thread_id: number) => {
+    const res = await dispatch(getMessagesByThreadId(thread_id));
+    console.log("Fetched messages for thread:", res);
   };
 
   const filteredChats = messageForSideBar.filter((chat: IMessage) =>
@@ -51,7 +57,13 @@ const Sidebar = () => {
           <MessageCircle className="w-4 h-4" />
         </div>
 
-        <div className="flex-1 min-w-0">
+        <div
+          onClick={() => {
+            setActiveChat(chat.thread_id);
+            getMessagesBySideBarId(chat.thread_id);
+          }}
+          className="flex-1 min-w-0"
+        >
           <div className="flex items-center justify-between mb-1">
             <h3
               className={`font-medium text-sm truncate ${

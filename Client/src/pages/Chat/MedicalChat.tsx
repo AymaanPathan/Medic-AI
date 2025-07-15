@@ -4,7 +4,6 @@ import {
   Clock,
   Shield,
   Send,
-  Plus,
   Play,
   Sparkles,
   Heart,
@@ -12,25 +11,20 @@ import {
   Activity,
 } from "lucide-react";
 import { socket } from "@/utils/socketSetup";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import type { RootDispatch, RootState } from "@/store";
 import { storeInitalThread } from "@/store/slices/thread.slice";
 import {
+  addUserMessage,
+  appendAiChunk,
   getMessageForSideBar,
   getMessagesByThreadId,
 } from "@/store/slices/chat.slice";
 import { getUsersInitialThreadId } from "@/store/slices/userSlice";
-import { useSelector } from "react-redux";
 import Sidebar from "./SideBar";
 const MedicalChat = () => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: "ai",
-      text: "Hello! I'm here to help with your medical questions. Please describe your symptoms in detail, and I'll provide guidance based on the information you share.",
-      timestamp: new Date(),
-    },
-  ]);
+  const messages = useSelector((state: RootState) => state.chat.message);
+
   const [inputValue, setInputValue] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const dispatch: RootDispatch = useDispatch();
@@ -76,35 +70,16 @@ const MedicalChat = () => {
         return;
       }
 
-      setMessages((prev) => {
-        const updated = [...prev];
-        const lastIndex = updated.length - 1;
-
-        if (updated[lastIndex]?.sender === "ai") {
-          updated[lastIndex] = {
-            ...updated[lastIndex],
-            text: updated[lastIndex].text + chunk,
-          };
-        } else {
-          updated.push({
-            id: Date.now(),
-            sender: "ai",
-            text: chunk,
-            timestamp: new Date(),
-          });
-        }
-
-        return updated;
-      });
+      dispatch(appendAiChunk(chunk));
     };
 
-    socket.off("stream_chunk");
+    socket.off("stream_chunk"); // Clean previous listener if any
     socket.on("stream_chunk", handleChunk);
 
     return () => {
       socket.off("stream_chunk", handleChunk);
     };
-  }, []);
+  }, [dispatch]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -116,17 +91,7 @@ const MedicalChat = () => {
 
   useEffect(() => {
     const fetchMessagesById = async () => {
-      const res = await dispatch(getMessagesByThreadId(1));
-      if (res.meta.requestStatus === "fulfilled") {
-        const msgs = res.payload.map((msg: any, index: number) => ({
-          id: index + 1,
-          sender: msg.sender.toLowerCase() === "a.i" ? "ai" : "user",
-          text: msg.message,
-          timestamp: new Date(msg.time_stamp),
-        }));
-
-        setMessages(msgs);
-      }
+      await dispatch(getMessagesByThreadId(1));
     };
 
     fetchMessagesById();
@@ -140,15 +105,7 @@ const MedicalChat = () => {
     setIsProcessing(true);
 
     // Add user message to UI
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        sender: "user",
-        text: messageToSend,
-        timestamp: new Date(),
-      },
-    ]);
+    dispatch(addUserMessage(messageToSend));
 
     const thread_id = currentUserThreadId;
 

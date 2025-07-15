@@ -1,11 +1,18 @@
 import { getChatById, getMessageByThreadIdForSideBar } from "@/api/chat.api";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
+interface Message {
+  id: number;
+  sender: "ai" | "user";
+  text: string;
+  timestamp: Date;
+}
+
 interface ChatResponse {
   initialThreadId: string | null;
-  message: [];
+  message: Message[];
   loading: boolean;
-  sidebarMessage: [];
+  sidebarMessage: any[];
   error: string | null;
 }
 
@@ -35,7 +42,29 @@ export const getMessageForSideBar = createAsyncThunk(
 const chatSlice = createSlice({
   name: "chat",
   initialState,
-  reducers: {},
+  reducers: {
+    appendAiChunk: (state, action) => {
+      const lastIndex = state.message.length - 1;
+      if (state.message[lastIndex]?.sender === "ai") {
+        state.message[lastIndex].text += action.payload;
+      } else {
+        state.message.push({
+          id: Date.now(),
+          sender: "ai",
+          text: action.payload,
+          timestamp: new Date(),
+        });
+      }
+    },
+    addUserMessage: (state, action) => {
+      state.message.push({
+        id: Date.now(),
+        sender: "user",
+        text: action.payload,
+        timestamp: new Date(),
+      });
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getMessagesByThreadId.pending, (state) => {
@@ -44,7 +73,12 @@ const chatSlice = createSlice({
       })
       .addCase(getMessagesByThreadId.fulfilled, (state, action) => {
         state.loading = false;
-        state.message = action.payload;
+        state.message = action.payload.map((msg: any, index: number) => ({
+          id: index + 1,
+          sender: msg.sender.toLowerCase() === "a.i" ? "ai" : "user",
+          text: msg.message,
+          timestamp: new Date(msg.time_stamp),
+        }));
       })
       .addCase(getMessagesByThreadId.rejected, (state, action) => {
         state.loading = false;
@@ -65,5 +99,5 @@ const chatSlice = createSlice({
       });
   },
 });
-
+export const { appendAiChunk, addUserMessage } = chatSlice.actions;
 export default chatSlice.reducer;
