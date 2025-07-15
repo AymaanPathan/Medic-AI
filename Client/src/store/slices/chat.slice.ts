@@ -2,17 +2,18 @@ import { getChatById, getMessageByThreadIdForSideBar } from "@/api/chat.api";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 interface Message {
+  message?: string;
   id: number;
-  sender: "ai" | "user";
+  sender: "User" | "A.I";
   text: string;
-  timestamp: Date;
+  time_stamp: string | Date;
 }
 
 interface ChatResponse {
   initialThreadId: string | null;
   message: Message[];
   loading: boolean;
-  sidebarMessage: any[];
+  sidebarMessage: Message[];
   error: string | null;
 }
 
@@ -45,23 +46,23 @@ const chatSlice = createSlice({
   reducers: {
     appendAiChunk: (state, action) => {
       const lastIndex = state.message.length - 1;
-      if (state.message[lastIndex]?.sender === "ai") {
+      if (state.message[lastIndex]?.sender === "A.I") {
         state.message[lastIndex].text += action.payload;
       } else {
         state.message.push({
           id: Date.now(),
-          sender: "ai",
+          sender: "A.I",
           text: action.payload,
-          timestamp: new Date(),
+          time_stamp: new Date().toISOString(),
         });
       }
     },
     addUserMessage: (state, action) => {
       state.message.push({
         id: Date.now(),
-        sender: "user",
+        sender: "User", // <-- Match backend casing
         text: action.payload,
-        timestamp: new Date(),
+        time_stamp: new Date().toISOString(),
       });
     },
   },
@@ -73,11 +74,11 @@ const chatSlice = createSlice({
       })
       .addCase(getMessagesByThreadId.fulfilled, (state, action) => {
         state.loading = false;
-        state.message = action.payload.map((msg: any, index: number) => ({
+        state.message = action.payload.map((msg: Message, index: number) => ({
           id: index + 1,
-          sender: msg.sender.toLowerCase() === "a.i" ? "ai" : "user",
+          sender: msg.sender as "User" | "A.I", // ✅ use as-is
           text: msg.message,
-          timestamp: new Date(msg.time_stamp),
+          timestamp: msg.time_stamp,
         }));
       })
       .addCase(getMessagesByThreadId.rejected, (state, action) => {

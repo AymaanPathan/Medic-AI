@@ -91,7 +91,7 @@ const MedicalChat = () => {
 
   useEffect(() => {
     const fetchMessagesById = async () => {
-      await dispatch(getMessagesByThreadId(1));
+      await dispatch(getMessagesByThreadId(currentUserThreadId!));
     };
 
     fetchMessagesById();
@@ -127,12 +127,6 @@ const MedicalChat = () => {
       if (!isProcessing) sendMessage();
     }
   };
-
-  const formatTime = (timestamp: Date) =>
-    timestamp.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
 
   // Rest of the code stays same — no change to rendering JSX
 
@@ -332,17 +326,17 @@ const MedicalChat = () => {
               <div
                 key={index}
                 className={`flex ${
-                  message.sender === "user" ? "justify-end" : "justify-start"
+                  message.sender === "User" ? "justify-end" : "justify-start"
                 }`}
               >
                 <div
                   className={`max-w-2xl ${
-                    message.sender === "user" ? "text-right" : "text-left"
+                    message.sender === "User" ? "text-right" : "text-left"
                   }`}
                 >
                   <div
                     className={`inline-flex items-start space-x-2 ${
-                      message.sender === "user"
+                      message.sender === "User"
                         ? "flex-row-reverse space-x-reverse"
                         : ""
                     }`}
@@ -350,12 +344,12 @@ const MedicalChat = () => {
                     {/* Avatar */}
                     <div
                       className={`flex-shrink-0 w-7 h-7 rounded-xl flex items-center justify-center ${
-                        message.sender === "user"
+                        message.sender === "User"
                           ? "bg-gray-600"
                           : "bg-gradient-to-r from-emerald-500 to-teal-500"
                       }`}
                     >
-                      {message.sender === "user" ? (
+                      {message.sender === "User" ? (
                         <div className="w-3 h-3 bg-white rounded-full"></div>
                       ) : (
                         <Stethoscope className="w-3 h-3 text-white" />
@@ -365,7 +359,7 @@ const MedicalChat = () => {
                     {/* Message Bubble */}
                     <div
                       className={`px-4 py-2.5 rounded-xl shadow-sm border ${
-                        message.sender === "user"
+                        message.sender === "User"
                           ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-transparent"
                           : "bg-white text-gray-900 border-gray-200"
                       }`}
@@ -373,26 +367,28 @@ const MedicalChat = () => {
                       <p className="text-sm leading-relaxed">{message.text}</p>
                       <div
                         className={`flex items-center space-x-1 mt-1 ${
-                          message.sender === "user"
+                          message.sender === "User"
                             ? "justify-end"
                             : "justify-start"
                         }`}
                       >
                         <Clock
                           className={`w-2.5 h-2.5 ${
-                            message.sender === "user"
+                            message.sender === "User"
                               ? "text-emerald-100"
                               : "text-gray-400"
                           }`}
                         />
                         <span
                           className={`text-xs ${
-                            message.sender === "user"
+                            message.sender === "User"
                               ? "text-emerald-100"
                               : "text-gray-500"
                           }`}
                         >
-                          {formatTime(message.timestamp)}
+                          {typeof message.time_stamp === "string"
+                            ? message.time_stamp
+                            : message.time_stamp?.toLocaleString()}
                         </span>
                       </div>
                     </div>
