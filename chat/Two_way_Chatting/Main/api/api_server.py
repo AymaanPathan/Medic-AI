@@ -71,6 +71,8 @@ async def websocket_stream(sid, data):
         # ✅ Store message in memory (for LLM flow)
         session_states[sid]["messages"].append(HumanMessage(content=message))
         session_states[sid]["latest_user_message"] = message
+        
+        
 
         # ✅ Save user message to DB
         with engine.connect() as connection:
@@ -84,11 +86,26 @@ async def websocket_stream(sid, data):
             )
             connection.commit()
 
-        # ✅ Process via LangGraph
-        result = await graph.ainvoke(
-            session_states[sid],
-            config={"configurable": {"thread_id": thread_id}}
-        )
+            result = connection.execute(
+                chat_messages.select()
+                .where(
+                    (chat_messages.c.thread_id == thread_id) &
+                    (chat_messages.c.sender == "User")
+                )
+                .order_by(chat_messages.c.time_stamp.asc())
+            )
+            user_messages = result.fetchall()
+
+            if len(user_messages) == 1:
+                await sio.emit("trigger_sidebar_fetch", {"thread_id": thread_id}, to=sid)
+
+            # ✅ Process via LangGraph
+            result = await graph.ainvoke(
+                session_states[sid],
+                config={"configurable": {"thread_id": thread_id}}
+            )
+
+        
 
         logger.info(f"[RESULT] for {sid}: Processing completed")
 

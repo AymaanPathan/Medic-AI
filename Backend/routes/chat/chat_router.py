@@ -37,7 +37,7 @@ async def get_first_ai_messages():
         chat_messages.c.sender,
         chat_messages.c.time_stamp,
         label("row_num", row_num)
-    ).where(chat_messages.c.sender == 'A.I').subquery()
+    ).where(chat_messages.c.sender == 'User').subquery()
      main_query = select(subquery).where(subquery.c.row_num == 1)
      with engine.begin() as connection:
         result = connection.execute(main_query).mappings().fetchall()

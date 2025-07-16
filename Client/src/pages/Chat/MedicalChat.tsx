@@ -40,6 +40,7 @@ const MedicalChat = () => {
   const [sessionStarted, setSessionStarted] = useState(false);
   const handleStartSession = async () => {
     setSessionStarted(true);
+
     await dispatch(storeInitalThread());
   };
 
@@ -64,7 +65,13 @@ const MedicalChat = () => {
     scrollToBottom();
   }, [messages]);
 
-  console.log("Current User Thread ID:", currentUserThreadId);
+  useEffect(() => {
+    socket.on("trigger_sidebar_fetch", (msg) => {
+      if (msg) {
+        dispatch(getMessageForSideBar());
+      }
+    });
+  });
 
   useEffect(() => {
     const handleChunk = (chunk: string) => {
@@ -117,6 +124,8 @@ const MedicalChat = () => {
       return;
     }
 
+    dispatch(getMessageForSideBar());
+
     // ✅ Send proper structured payload
     socket.emit("start_stream_answer", {
       thread_id,
@@ -130,14 +139,6 @@ const MedicalChat = () => {
       if (!isProcessing) sendMessage();
     }
   };
-
-  // Rest of the code stays same — no change to rendering JSX
-
-  useEffect(() => {
-    socket.on("stream_chunk", (data) => {
-      console.log(data);
-    });
-  });
 
   useEffect(() => {
     dispatch(getMessageForSideBar());

@@ -19,13 +19,16 @@ const Sidebar = () => {
   const [activeChat, setActiveChat] = useState(null);
   const dispatch: RootDispatch = useDispatch();
   const [hoveredChat, setHoveredChat] = useState(null);
+  const messages = useSelector((state: RootState) => state.chat.message);
   const messageForSideBar = useSelector(
     (state: RootState) => state.chat.sidebarMessage
   );
 
   const handleNewChat = async () => {
-    await dispatch(storeInitalThread());
     dispatch(clearChat());
+    if (messages.length > 0) {
+      await dispatch(storeInitalThread());
+    }
   };
   const getMessagesBySideBarId = async (thread_id: number) => {
     await dispatch(getMessagesByThreadId(thread_id));
