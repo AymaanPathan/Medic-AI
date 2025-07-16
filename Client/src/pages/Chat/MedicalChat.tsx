@@ -76,7 +76,7 @@ const MedicalChat = () => {
       dispatch(appendAiChunk(chunk));
     };
 
-    socket.off("stream_chunk"); // Clean previous listener if any
+    socket.off("stream_chunk");
     socket.on("stream_chunk", handleChunk);
 
     return () => {

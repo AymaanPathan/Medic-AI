@@ -9,8 +9,11 @@ import {
 } from "lucide-react";
 import type { RootDispatch, RootState } from "@/store";
 import { useDispatch, useSelector } from "react-redux";
-import { getMessagesByThreadId } from "@/store/slices/chat.slice";
-import { setCurrentUserThreadId } from "@/store/slices/thread.slice";
+import { clearChat, getMessagesByThreadId } from "@/store/slices/chat.slice";
+import {
+  setCurrentUserThreadId,
+  storeInitalThread,
+} from "@/store/slices/thread.slice";
 
 const Sidebar = () => {
   const [activeChat, setActiveChat] = useState(null);
@@ -20,8 +23,9 @@ const Sidebar = () => {
     (state: RootState) => state.chat.sidebarMessage
   );
 
-  const handleNewChat = () => {
-    setActiveChat(null);
+  const handleNewChat = async () => {
+    await dispatch(storeInitalThread());
+    dispatch(clearChat());
   };
   const getMessagesBySideBarId = async (thread_id: number) => {
     await dispatch(getMessagesByThreadId(thread_id));

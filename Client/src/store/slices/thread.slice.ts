@@ -38,6 +38,7 @@ const threadSlice = createSlice({
       .addCase(storeInitalThread.fulfilled, (state, action) => {
         state.loading = false;
         state.initialThreadId = action.payload.inserted_id;
+        state.currentUserThreadId = action.payload.inserted_id;
       })
       .addCase(storeInitalThread.rejected, (state, action) => {
         state.loading = false;

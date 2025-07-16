@@ -44,6 +44,11 @@ const chatSlice = createSlice({
   name: "chat",
   initialState,
   reducers: {
+    clearChat: (state) => {
+      state.message = [];
+      state.loading = false;
+      state.error = null;
+    },
     appendAiChunk: (state, action) => {
       const lastIndex = state.message.length - 1;
       if (state.message[lastIndex]?.sender === "A.I") {
@@ -100,5 +105,5 @@ const chatSlice = createSlice({
       });
   },
 });
-export const { appendAiChunk, addUserMessage } = chatSlice.actions;
+export const { appendAiChunk, addUserMessage, clearChat } = chatSlice.actions;
 export default chatSlice.reducer;
