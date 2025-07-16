@@ -1,7 +1,7 @@
 from fastapi import APIRouter,Query
 from Backend.tables.add_Chat_tables import engine
 from Backend.tables.add_Chat_tables import chat_messages,chat_thread
-from sqlalchemy import label, select 
+from sqlalchemy import label, select
 from sqlalchemy import func
 router = APIRouter(prefix="/chats",tags=["chats"])
 @router.get("/getAll")
@@ -21,15 +21,14 @@ async def get_chat_by_thrad_id(threadId:int = Query(...)):
 
 
 
-@router.get("/getFirstAiMessages")
+@router.get("/getFirstUserMessages")
 async def get_first_ai_messages():
 
     # Create a windowed row number
      row_num = func.row_number().over(
           partition_by=chat_messages.c.thread_id,
-          order_by=chat_messages.c.time_stamp.asc()
+          order_by=chat_messages.c.time_stamp.desc()
      )
-
 
      subquery = select(
         chat_messages.c.thread_id,
@@ -38,7 +37,7 @@ async def get_first_ai_messages():
         chat_messages.c.time_stamp,
         label("row_num", row_num)
     ).where(chat_messages.c.sender == 'User').subquery()
-     main_query = select(subquery).where(subquery.c.row_num == 1)
+     main_query = select(subquery).where(subquery.c.row_num == 1).order_by(subquery.c.time_stamp.desc())
      with engine.begin() as connection:
         result = connection.execute(main_query).mappings().fetchall()
         return result

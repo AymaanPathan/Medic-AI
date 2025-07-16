@@ -34,7 +34,7 @@ export const getMessagesByThreadId = createAsyncThunk(
 );
 
 export const getMessageForSideBar = createAsyncThunk(
-  "chat/getFirstAiMessages",
+  "chat/getFirstUserMessages",
   async () => {
     const response = await getMessageByThreadIdForSideBar();
     return response.data;

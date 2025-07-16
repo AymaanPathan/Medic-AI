@@ -25,6 +25,7 @@ import {
 } from "@/store/slices/chat.slice";
 import { getUsersInitialThreadId } from "@/store/slices/userSlice";
 import Sidebar from "./SideBar";
+import Navbar from "@/components/Navbar";
 const MedicalChat = () => {
   const messages = useSelector((state: RootState) => state.chat.message);
 
@@ -277,224 +278,174 @@ const MedicalChat = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white flex">
-      {/* Sidebar */}
-      <div className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
-        {/* Sidebar Header */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center">
-              <Stethoscope className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900">
-                MedAssist AI
-              </h1>
-              <p className="text-xs text-gray-500">Medical Consultation</p>
-            </div>
+    <div>
+      <div className="min-h-screen bg-white flex">
+        <div className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
+          {/* Sidebar Content */}
+          <div className="flex-auto h-screen overflow-y-scroll scrollbar-thin ">
+            <Sidebar />
           </div>
         </div>
 
-        {/* Sidebar Content */}
-        <div className="flex-auto h-screen overflow-y-scroll scrollbar-thin ">
-          <Sidebar />
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col bg-white min-w-0">
-        {/* Chat Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-emerald-50 via-white to-teal-50 border-b border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                Medical Consultation
-              </h2>
-              <p className="text-gray-600 text-xs mt-0.5">
-                Share your symptoms for personalized guidance
-              </p>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-              <span className="text-xs font-medium text-emerald-700">
-                AI Active
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-50">
-          <div className="max-w-4xl mx-auto space-y-3">
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${
-                  message.sender === "User" ? "justify-end" : "justify-start"
-                }`}
-              >
+        <div className="flex- h-screen w-full overflow-hidden flex flex-col bg-white min-w-0">
+          <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-50">
+            <div className="max-w-4xl mx-auto space-y-3">
+              {messages.map((message, index) => (
                 <div
-                  className={`max-w-2xl ${
-                    message.sender === "User" ? "text-right" : "text-left"
+                  key={index}
+                  className={`flex ${
+                    message.sender === "User" ? "justify-end" : "justify-start"
                   }`}
                 >
                   <div
-                    className={`inline-flex items-start space-x-2 ${
-                      message.sender === "User"
-                        ? "flex-row-reverse space-x-reverse"
-                        : ""
+                    className={`max-w-2xl ${
+                      message.sender === "User" ? "text-right" : "text-left"
                     }`}
                   >
-                    {/* Avatar */}
                     <div
-                      className={`flex-shrink-0 w-7 h-7 rounded-xl flex items-center justify-center ${
+                      className={`inline-sflex items-start space-x-2 ${
                         message.sender === "User"
-                          ? "bg-gray-600"
-                          : "bg-gradient-to-r from-emerald-500 to-teal-500"
+                          ? "flex-row-reverse space-x-reverse"
+                          : ""
                       }`}
                     >
-                      {message.sender === "User" ? (
-                        <div className="w-3 h-3 bg-white rounded-full"></div>
-                      ) : (
-                        <Stethoscope className="w-3 h-3 text-white" />
-                      )}
-                    </div>
-
-                    {/* Message Bubble */}
-                    <div
-                      className={`px-4 py-2.5 rounded-xl shadow-sm border ${
-                        message.sender === "User"
-                          ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-transparent"
-                          : "bg-white text-gray-900 border-gray-200"
-                      }`}
-                    >
-                      <p className="text-sm leading-relaxed">{message.text}</p>
                       <div
-                        className={`flex items-center space-x-1 mt-1 ${
+                        className={`px-4 py-2.5 rounded-xl shadow-sm border ${
                           message.sender === "User"
-                            ? "justify-end"
-                            : "justify-start"
+                            ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-transparent"
+                            : "bg-white text-gray-900 border-gray-200"
                         }`}
                       >
-                        <Clock
-                          className={`w-2.5 h-2.5 ${
+                        <p className="text-sm leading-relaxed">
+                          {message.text}
+                        </p>
+                        <div
+                          className={`flex items-center space-x-1 mt-1 ${
                             message.sender === "User"
-                              ? "text-emerald-100"
-                              : "text-gray-400"
-                          }`}
-                        />
-                        <span
-                          className={`text-xs ${
-                            message.sender === "User"
-                              ? "text-emerald-100"
-                              : "text-gray-500"
+                              ? "justify-end"
+                              : "justify-start"
                           }`}
                         >
-                          {typeof message.time_stamp === "string"
-                            ? message.time_stamp
-                            : message.time_stamp?.toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* Processing Indicator */}
-            {isProcessing && (
-              <div className="flex justify-start">
-                <div className="max-w-2xl">
-                  <div className="inline-flex items-start space-x-2">
-                    <div className="flex-shrink-0 w-7 h-7 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center">
-                      <Stethoscope className="w-3 h-3 text-white" />
-                    </div>
-                    <div className="bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm">
-                      <div className="flex items-center space-x-2">
-                        <div className="flex space-x-1">
-                          <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce"></div>
-                          <div
-                            className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-bounce"
-                            style={{ animationDelay: "0.15s" }}
-                          ></div>
-                          <div
-                            className="w-1.5 h-1.5 bg-green-500 rounded-full animate-bounce"
-                            style={{ animationDelay: "0.3s" }}
-                          ></div>
+                          <Clock
+                            className={`w-2.5 h-2.5 ${
+                              message.sender === "User"
+                                ? "text-emerald-100"
+                                : "text-gray-400"
+                            }`}
+                          />
+                          <span
+                            className={`text-xs ${
+                              message.sender === "User"
+                                ? "text-emerald-100"
+                                : "text-gray-500"
+                            }`}
+                          >
+                            {typeof message.time_stamp === "string"
+                              ? message.time_stamp
+                              : message.time_stamp?.toLocaleString()}
+                          </span>
                         </div>
-                        <span className="text-sm text-gray-700">
-                          Analyzing your symptoms...
-                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
-          <div ref={messagesEndRef} />
-        </div>
+              ))}
 
-        {/* Input Area */}
-        <div className="px-6 py-4 bg-white border-t border-gray-100">
-          <div className="max-w-4xl mx-auto space-y-3">
-            <div className="relative">
-              <textarea
-                ref={inputRef}
-                value={inputValue}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                placeholder="Describe your symptoms in detail..."
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition-all duration-200 text-sm placeholder-gray-500"
-                rows={3}
-                maxLength={800}
-                disabled={isProcessing}
-              />
-              <div className="absolute bottom-3 right-3 flex items-center space-x-2">
-                <span className="text-xs text-gray-400">{charCount}/800</span>
+              {/* Processing Indicator */}
+              {isProcessing && (
+                <div className="flex justify-start">
+                  <div className="max-w-2xl">
+                    <div className="inline-flex items-start space-x-2">
+                      <div className="flex-shrink-0 w-7 h-7 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center">
+                        <Stethoscope className="w-3 h-3 text-white" />
+                      </div>
+                      <div className="bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm">
+                        <div className="flex items-center space-x-2">
+                          <div className="flex space-x-1">
+                            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce"></div>
+                            <div
+                              className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-bounce"
+                              style={{ animationDelay: "0.15s" }}
+                            ></div>
+                            <div
+                              className="w-1.5 h-1.5 bg-green-500 rounded-full animate-bounce"
+                              style={{ animationDelay: "0.3s" }}
+                            ></div>
+                          </div>
+                          <span className="text-sm text-gray-700">
+                            Analyzing your symptoms...
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input Area */}
+          <div className="px-6 py-4 bg-white border-t border-gray-100">
+            <div className="max-w-4xl mx-auto space-y-3">
+              <div className="relative">
+                <textarea
+                  ref={inputRef}
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Describe your symptoms in detail..."
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:bg-white transition-all duration-200 text-sm placeholder-gray-500"
+                  rows={3}
+                  maxLength={800}
+                  disabled={isProcessing}
+                />
+                <div className="absolute bottom-3 right-3 flex items-center space-x-2">
+                  <span className="text-xs text-gray-400">{charCount}/800</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-1.5 text-xs text-gray-600">
+                    <Shield className="w-3 h-3 text-emerald-500" />
+                    <span>Encrypted</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5 text-xs text-gray-600">
+                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
+                    <span>HIPAA Compliant</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={sendMessage}
+                  disabled={!inputValue.trim() || isProcessing}
+                  className="flex items-center space-x-2 px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl transition-all duration-200 font-medium text-sm shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
+                >
+                  {isProcessing ? (
+                    <>
+                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Analyzing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-3 h-3" />
+                      <span>Send</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-1.5 text-xs text-gray-600">
-                  <Shield className="w-3 h-3 text-emerald-500" />
-                  <span>Encrypted</span>
-                </div>
-                <div className="flex items-center space-x-1.5 text-xs text-gray-600">
-                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
-                  <span>HIPAA Compliant</span>
-                </div>
-              </div>
-
-              <button
-                onClick={sendMessage}
-                disabled={!inputValue.trim() || isProcessing}
-                className="flex items-center space-x-2 px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl transition-all duration-200 font-medium text-sm shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
-              >
-                {isProcessing ? (
-                  <>
-                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Analyzing...</span>
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-3 h-3" />
-                    <span>Send</span>
-                  </>
-                )}
-              </button>
-            </div>
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="px-6 py-2 bg-white border-t border-gray-100">
-          <div className="max-w-4xl mx-auto text-center">
-            <p className="text-xs text-gray-500">
-              AI-powered medical guidance • Not a substitute for professional
-              medical advice • Emergency: Call 911
-            </p>
+          {/* Footer */}
+          <div className="px-6 py-2 bg-white border-t border-gray-100">
+            <div className="max-w-4xl mx-auto text-center">
+              <p className="text-xs text-gray-500">
+                AI-powered medical guidance • Not a substitute for professional
+                medical advice • Emergency: Call 911
+              </p>
+            </div>
           </div>
         </div>
       </div>

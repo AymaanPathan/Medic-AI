@@ -8,6 +8,6 @@ export const getChatById = async (threadId: number) => {
 };
 
 export const getMessageByThreadIdForSideBar = async () => {
-  const response = await axiosSetup.get(`/chats/getFirstAiMessages`);
+  const response = await axiosSetup.get(`/chats/getFirstUserMessages`);
   return response;
 };
