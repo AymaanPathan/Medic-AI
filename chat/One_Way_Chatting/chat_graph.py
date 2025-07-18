@@ -1,15 +1,10 @@
 from langgraph.graph import StateGraph, END
 from chat.One_Way_Chatting.chat_state import ChatState
 from langgraph.types import Command
-import json
 from chat.One_Way_Chatting.qa_chain import qa_chain
 from chat.One_Way_Chatting.get_more_question_chain import generate_more_question_chain
 
 graph = StateGraph(ChatState)
-
-# Load static symptom info
-with open("../../../docs/symptoms.json", "r") as f:
-    symptom_info = json.load(f)
 
 
 # 1. start the chat
@@ -17,6 +12,7 @@ def chat(state: ChatState) -> Command:
     print("[chat node] Incoming state:", state)
 
     symptoms_input = state.get("symptoms_input")
+    print("symptoms_by_user",symptoms_input)
 
     if not symptoms_input:
         print("[chat node] No symptoms_input provided. Ending flow.")
@@ -27,7 +23,7 @@ def chat(state: ChatState) -> Command:
 
     return Command(
         update={"userSymptoms": symptoms},
-        goto="get_user_info"
+        goto="generate_more"
     )
 
 

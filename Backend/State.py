@@ -14,6 +14,7 @@ class FollowupInput(BaseModel):
 
 class FollowupAnswers(BaseModel):
     session_id: str
+    userSymptoms:str
     user_response: Dict[str, str]
 
 class FinalPromptInput(BaseModel):

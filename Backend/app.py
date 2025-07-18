@@ -65,7 +65,10 @@ async def generate_follow_up(data: FollowupInput):
 
 @fastapi_app.post("/get_answers")
 async def getAnswers(data: FollowupAnswers):
-    state = {"user_response": data.user_response}
+    state = {
+        "symptoms_input": data.userSymptoms, 
+        "user_response": data.user_response,
+    }
     result = compiled_graph.invoke(state)
     return result
 

@@ -17,7 +17,15 @@ const initialState: IDiagnosisResponse = {
   followupQuestions: [],
   user_response: {},
   finalPrompt: "",
-  diagnosis: "",
+  diagnosis: {
+    diseaseName: "",
+    diseaseSummary: "",
+    whyYouHaveThis: "",
+    whatToDoFirst: "",
+    dangerSigns: [],
+    lifestyleChanges: [],
+    medicines: [],
+  },
   audioUrl: "",
   loading: false,
   error: null,
@@ -72,12 +80,18 @@ export const submitFollowupAnswersThunk = createAsyncThunk(
   "diagnosis/submitFollowupAnswers",
   async ({
     sessionId,
+    userSymptoms,
     user_response,
   }: {
     sessionId: string;
+    userSymptoms: string;
     user_response: Record<string, string>;
   }) => {
-    const response = await submitFollowupAnswers(sessionId, user_response);
+    const response = await submitFollowupAnswers(
+      sessionId,
+      userSymptoms,
+      user_response
+    );
     return { user_response, formatted_response: response.formatted_response };
   }
 );
@@ -183,21 +197,32 @@ const diagnosisSlice = createSlice({
       .addCase(submitFollowupAnswersThunk.fulfilled, (state, action) => {
         state.user_response = action.payload.user_response;
         // Store formatted response in state temporarily (for prompt generation)
-        state.finalPrompt = action.payload.formatted_response;
+        console.log("Formatted response:", action.payload);
       })
       .addCase(generateFinalPromptThunk.fulfilled, (state, action) => {
-        state.finalPrompt = action.payload.final_prompt;
+        console.log("Final prompt generated:", action.payload?.final_prompt);
+        state.finalPrompt = action.payload?.final_prompt;
       })
       .addCase(generateLLMAnswer.fulfilled, (state, action) => {
-        state.diagnosis = action.payload;
+        console.log("llm answer ", action.payload);
+        state.diagnosis = {
+          diseaseName: action.payload?.diseaseName || "",
+          diseaseSummary: action.payload?.diseaseSummary || "",
+          whyYouHaveThis: action.payload?.whyYouHaveThis || "",
+          whatToDoFirst: action.payload?.whatToDoFirst || "",
+          dangerSigns: action.payload?.dangerSigns || [],
+          lifestyleChanges: action.payload?.lifestyleChanges || [],
+          medicines: action.payload?.medicines || [],
+        };
       })
+
       .addCase(analyzeImageAndVoiceThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(analyzeImageAndVoiceThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.diagnosis = action.payload.diagnosis;
+        state.audioUrl = action.payload?.audio_url || "";
       })
       .addCase(analyzeImageAndVoiceThunk.rejected, (state, action) => {
         state.loading = false;

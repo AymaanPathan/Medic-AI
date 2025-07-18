@@ -53,11 +53,13 @@ export const generateFollowUp = async (
 // Get users  answers to follow-up questions
 export const submitFollowupAnswers = async (
   sessionId: string,
+  userSymptoms: string,
   userResponses: Record<string, string>
 ) => {
   try {
     const response = await axiosSetup.post("/get_answers", {
       session_id: sessionId,
+      userSymptoms,
       user_response: userResponses,
     });
     return response.data;

@@ -25,7 +25,6 @@ import {
 } from "@/store/slices/chat.slice";
 import { getUsersInitialThreadId } from "@/store/slices/userSlice";
 import Sidebar from "./SideBar";
-import Navbar from "@/components/Navbar";
 const MedicalChat = () => {
   const messages = useSelector((state: RootState) => state.chat.message);
 

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { RootDispatch, RootState } from "@/store";
 import {
   generateFinalPromptThunk,
+  generateLLMAnswer,
   submitFollowupAnswersThunk,
 } from "@/store/slices/diagnosis.slice";
 import { socket } from "@/utils/socketSetup";
@@ -14,17 +15,17 @@ const FollowUpQuestions = () => {
   const [answers, setAnswers] = useState<{ [key: number]: string }>({});
   const dispatch: RootDispatch = useDispatch();
   const userSymptoms = useSelector(
-    (state: RootState) => state.chat.userSymptoms
+    (state: RootState) => state.diagnosis.userSymptoms
   );
-  const finalPrompt = useSelector((state: RootState) => state.chat.finalPrompt);
+
   const userAdditionalFollowupAnswer = useSelector(
-    (state: RootState) => state.chat.user_response
+    (state: RootState) => state.diagnosis.user_response
   );
   const questions = useSelector(
-    (state: RootState) => state.chat.followupQuestions
+    (state: RootState) => state.diagnosis.followupQuestions
   );
   const navigate = useNavigate();
-  const progress = ((current + 1) / questions.length) * 100;
+  const progress = ((current + 1) / questions?.length) * 100;
 
   const handleChange = (
     e:
@@ -58,24 +59,33 @@ const FollowUpQuestions = () => {
     const response = await dispatch(
       submitFollowupAnswersThunk({
         sessionId: "1",
+        userSymptoms: userSymptoms,
         user_response: usersAnswers,
       })
     );
+
     if (response.meta.requestStatus === "fulfilled") {
-      await dispatch(
+      const finalPromptResponse = await dispatch(
         generateFinalPromptThunk({
           sessionId: "1",
           userSymptoms: userSymptoms,
           formatted_response: userAdditionalFollowupAnswer,
         })
       ).unwrap();
-    }
-    const res = socket.emit("start_diagnosis", {
-      finalPrompt: finalPrompt,
-    });
 
-    if (res && response.meta.requestStatus === "fulfilled") {
-      navigate("/chat");
+      console.log("Generated final prompt:", finalPromptResponse?.final_prompt);
+
+      socket.emit("start_diagnosis", {
+        finalPrompt: finalPromptResponse?.final_prompt,
+      });
+      await dispatch(
+        generateLLMAnswer({
+          session_id: "1",
+          finalPrompt: finalPromptResponse?.final_prompt,
+        })
+      );
+
+      navigate("/diagnosis-report");
     }
   };
 

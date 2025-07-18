@@ -71,6 +71,8 @@ async def websocket_stream(sid, data):
         # ✅ Store message in memory (for LLM flow)
         session_states[sid]["messages"].append(HumanMessage(content=message))
         session_states[sid]["latest_user_message"] = message
+        if not session_states[sid].get("userSymptoms"):
+            session_states[sid]["symptoms_input"] = message
         
         
 
