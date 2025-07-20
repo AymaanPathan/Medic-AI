@@ -1,3 +1,4 @@
+"use client";
 import { useState, useEffect } from "react";
 import {
   Stethoscope,
@@ -93,6 +94,7 @@ const Navbar = () => {
   }, [isMobileMenuOpen]);
 
   const handleNavigation = (path: string) => {
+    // navigate(path);
     setIsMobileMenuOpen(false);
   };
 
@@ -136,7 +138,7 @@ const Navbar = () => {
             <nav className="hidden lg:flex items-center space-x-1">
               {navItems.map((item, index) => {
                 const Icon = item.icon;
-                const isActive = false;
+                const isActive = true;
 
                 return (
                   <div
