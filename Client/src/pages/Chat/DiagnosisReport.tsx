@@ -8,7 +8,6 @@ import {
   CheckCircle,
   ChevronLeft,
   Download,
-  FileText,
   Heart,
   Pill,
   Shield,
@@ -418,17 +417,13 @@ const DiagnosisReport = () => {
                 Start New Assessment
               </button>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2">
                 <button
                   onClick={() => window.print()}
                   className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 text-sm"
                 >
                   <Download className="w-3 h-3" />
                   <span>Print</span>
-                </button>
-                <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 text-sm">
-                  <FileText className="w-3 h-3" />
-                  <span>Save</span>
                 </button>
               </div>
             </div>

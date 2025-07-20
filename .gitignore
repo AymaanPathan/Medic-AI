@@ -1,8 +1,9 @@
-/venv
-.env
-/docs/*
-/vectorstore/*
-*.faiss
-*.pkl
-*.pyc
-__pycache__/
+**/venv
+**/.env
+**/docs/*
+**/vectorstore/*
+**/*.faiss
+**/*.pkl
+**/*.pyc
+**/__pycache__/
+**/node_modules/
