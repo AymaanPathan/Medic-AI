@@ -1,5 +1,5 @@
 import axios from "axios";
-import { clearToken, getToken } from "../utils/auth";
+import { clearToken, getToken } from "./auth";
 import toast from "react-hot-toast";
 import getUrl from "./getApiUrl";
 // import { showApiError } from "./showApiError";

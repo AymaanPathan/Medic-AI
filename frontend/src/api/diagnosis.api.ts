@@ -1,4 +1,4 @@
-import axiosSetup from "../utils/axiosSetup";
+import axiosSetup from "../../../Client/src/utils/axiosSetup";
 
 // 1 get user symptoms
 export const getUserSymptoms = async (
