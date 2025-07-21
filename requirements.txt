@@ -1,5 +1,8 @@
 langgraph
+langchain_groq
+langchain_huggingface
 langchain
+langchain-community
 pydantic
 requests
 python-dotenv
@@ -7,3 +10,12 @@ fastapi
 uvicorn
 httpx
 psycopg2
+sentence-transformers
+faiss-cpu
+pypdf
+socketio
+python-socketio[client]
+elevenlabs
+gtts
+pydub
+python-multipart

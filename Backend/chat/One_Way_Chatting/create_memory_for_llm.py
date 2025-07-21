@@ -3,9 +3,11 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_huggingface import   HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
+import os
 load_dotenv()
 
-DATA_PATH = "docs/"
+DATA_PATH = "../../../Assets/docs"
+print("Path",DATA_PATH)
 # 1 load the data
 def load_pdf_files(data):
     loader =DirectoryLoader(data,glob="*.pdf",loader_cls=PyPDFLoader)
@@ -35,6 +37,8 @@ embedding_model = get_embedding_model()
 
 
 # 4 store embedding on FAISS [cloud]
-DB_FAISS_PATH = "../vectorstore/db_faiss"
+DB_FAISS_PATH = os.path.abspath("../../../Assets/vectorstore")
+print("Loading FAISS from:", DB_FAISS_PATH)
+
 db = FAISS.from_documents(text_chunks,embedding_model)
 db.save_local(DB_FAISS_PATH)

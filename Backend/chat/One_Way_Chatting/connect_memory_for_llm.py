@@ -14,7 +14,7 @@ import os
 load_dotenv()
 
 # Define model and DB path
-DB_FAISS_PATH = "../vectorstore/db_faiss"
+DB_FAISS_PATH = "../../../vectorstore/db_faiss"
 
 model_id = "mistralai/Mistral-7B-Instruct-v0.3"
 def load_llm(model_name: str = "llama3-8b-8192"):

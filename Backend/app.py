@@ -8,15 +8,15 @@ from Backend.routes.chat.chat_router import router as chat_router
 from Backend.routes.thread.thread_router import router as thread_router
 from Backend.routes.users.user_router import router as user_router
 
-from chat.One_Way_Chatting.chat_graph import compiled_graph
-from chat.One_Way_Chatting.get_more_question_chain import generate_more_question_chain
-from chat.One_Way_Chatting.qa_chain import qa_chain
+from Backend.chat.One_Way_Chatting.chat_graph import compiled_graph
+from Backend.chat.One_Way_Chatting.get_more_question_chain import generate_more_question_chain
+from Backend.chat.One_Way_Chatting.qa_chain import qa_chain
 from fastapi.middleware.cors import CORSMiddleware
-from chat.Two_way_Chatting.Main.api.api_server import router as stream_router  
+from Backend.chat.Two_way_Chatting.Main.api.api_server import router as stream_router  
 from Backend.socket_config import sio,allowed_origins
 from fastapi import UploadFile, File
 import base64
-from chat.Image_voice_Identifier.Voice_of_doc import text_to_speech_with_elevenlabs
+from Backend.chat.Image_voice_Identifier.Voice_of_doc import text_to_speech_with_elevenlabs
 from groq import Groq
 import socketio
 
