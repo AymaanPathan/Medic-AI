@@ -12,6 +12,7 @@ import {
   Shield,
   Stethoscope,
 } from "lucide-react";
+import { IMedicine } from "@/types/interfaces";
 
 const DiagnosisReport = () => {
   const followupAnswers = useSelector(
@@ -172,19 +173,7 @@ const DiagnosisReport = () => {
                 </div>
                 <div className="px-4 py-4">
                   {diagnosisResult.medicines.map(
-                    (
-                      med: {
-                        age_restriction: string;
-                        when_not_to_take: string[];
-                        cons: string[];
-                        pros: string[];
-                        dosage(dosage: string): unknown;
-                        name: string;
-                        purpose: string;
-                        how_it_works: string;
-                      },
-                      idx: number
-                    ) => (
+                    (med: IMedicine, idx: number) => (
                       <div
                         key={idx}
                         className="border border-gray-200 rounded-xl overflow-hidden mb-4 last:mb-0"

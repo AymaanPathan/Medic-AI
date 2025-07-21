@@ -10,6 +10,10 @@ export interface Medicine {
 }
 
 export interface Diagnosis {
+  [x: string]: { [s: string]: unknown } | ArrayLike<unknown>;
+  cons: string[];
+  purpose: string;
+  name: string;
   diseaseName: string;
   diseaseSummary: string;
   whyYouHaveThis: string;
@@ -30,4 +34,11 @@ export interface IDiagnosisResponse {
   audioUrl: string; // ✅ make it string, not optional or default to empty
   loading: boolean;
   error: string | null;
+}
+
+export interface Ichat {
+  id: number;
+  thread_id: number | string | null;
+  message: string;
+  time_stamp: string;
 }

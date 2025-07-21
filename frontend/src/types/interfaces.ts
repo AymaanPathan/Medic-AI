@@ -59,7 +59,18 @@ export interface ThankYouSectionProps {
 }
 
 // Chat Types
-
+export interface IMedicine {
+  name: string;
+  purpose: string;
+  how_it_works: string;
+  dosage: {
+    [ageGroup: string]: string; // e.g., "Adult": "1 tablet/day"
+  };
+  pros: string[];
+  cons: string[];
+  when_not_to_take: string[];
+  age_restriction: string;
+}
 export type Diagnosis = {
   diseaseName: string;
   diseaseSummary: string;

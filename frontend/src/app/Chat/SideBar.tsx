@@ -1,4 +1,3 @@
-"use client";
 import { useState } from "react";
 import {
   Plus,
@@ -15,6 +14,7 @@ import {
   setCurrentUserThreadId,
   storeInitalThread,
 } from "@/store/slices/thread.slice";
+import { Ichat } from "@/models/chat";
 
 const Sidebar = () => {
   const [activeChat, setActiveChat] = useState<string | number | null>(null);
@@ -36,18 +36,9 @@ const Sidebar = () => {
     dispatch(setCurrentUserThreadId(thread_id));
   };
 
-  const filteredChats = messageForSideBar;
+  const filteredChats = messageForSideBar as unknown as Ichat[];
 
-  const ChatItem = ({
-    chat,
-  }: {
-    chat: {
-      id: number;
-      thread_id: number | string | null;
-      message: string;
-      time_stamp: string;
-    };
-  }) => (
+  const ChatItem = ({ chat }: { chat: Ichat }) => (
     <div
       className={`group relative p-2 cursor-pointer transition-all duration-200 rounded-2xl mb-2 border border-transparent hover:border-emerald-100 ${
         activeChat === chat.id
@@ -136,19 +127,9 @@ const Sidebar = () => {
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
               Recent
             </h3>
-            {filteredChats.map(
-              (
-                chat: {
-                  id: number;
-                  thread_id: number;
-                  message: string;
-                  time_stamp: string;
-                },
-                index: number
-              ) => (
-                <ChatItem key={index} chat={chat} />
-              )
-            )}
+            {filteredChats.map((chat: Ichat, index) => (
+              <ChatItem key={index} chat={chat} />
+            ))}
           </div>
         )}
       </div>
