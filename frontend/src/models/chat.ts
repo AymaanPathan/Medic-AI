@@ -42,3 +42,9 @@ export interface Ichat {
   message: string;
   time_stamp: string;
 }
+
+export interface ChatMessage {
+  sender: "User" | "Bot" | string; // adjust or extend if you have more sender types
+  text: string;
+  time_stamp: string | Date; // handles both formatted strings and Date objects
+}

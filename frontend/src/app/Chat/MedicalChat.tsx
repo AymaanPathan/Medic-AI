@@ -24,8 +24,9 @@ import {
   getMessagesByThreadId,
 } from "@/store/slices/chat.slice";
 import { getUsersInitialThreadId } from "@/store/slices/userSlice";
-import Sidebar from "./SideBar";
+import Sidebar from "../../components/SideBar";
 import { IMessage } from "@/types/interfaces";
+import { ChatMessage } from "@/models/chat";
 const MedicalChat = () => {
   const messages = useSelector((state: RootState) => state.chat.message);
 
@@ -290,7 +291,7 @@ const MedicalChat = () => {
         <div className="flex- h-screen w-full overflow-hidden flex flex-col bg-white min-w-0">
           <div className="flex-1 overflow-y-auto px-6 py-4 bg-gray-50">
             <div className="max-w-4xl mx-auto space-y-3">
-              {messages.map((message: IMessage, index: number) => (
+              {messages.map((message: ChatMessage, index: number) => (
                 <div
                   key={index}
                   className={`flex ${
