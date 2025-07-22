@@ -29,9 +29,9 @@ const SymptomForm = () => {
     }
   };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
+    <div className="mt-10 mb-20">
       <div className="container mx-auto px-4 ">
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-center max-w-7xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-center justify-center max-w-7xl mx-auto">
           {/* Left Side - Hero Content */}
           <div className="space-y-8 lg:pr-8">
             <div className="space-y-6">
@@ -43,7 +43,7 @@ const SymptomForm = () => {
               <div className="space-y-6">
                 <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-none">
                   Smart Health
-                  <span className="block bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent mt-2">
+                  <span className="block bg-gradient-to-r text-gray-800 bg-clip-text mt-2">
                     Assessment
                   </span>
                 </h1>
@@ -79,10 +79,7 @@ const SymptomForm = () => {
               </div>
             ) : (
               <div className="relative">
-                {/* Glassmorphism background */}
-                <div className="absolute inset-0 bg-white/70 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl shadow-blue-500/10"></div>
-
-                <div className="relative p-8 lg:p-10">
+                <div className="relative p-8">
                   <div className="space-y-8">
                     <div className="text-center space-y-3">
                       <h2 className="text-3xl font-bold tracking-tight text-slate-900">
@@ -100,7 +97,7 @@ const SymptomForm = () => {
                           value={problem}
                           onChange={(e) => setProblem(e.target.value)}
                           placeholder="Describe your symptoms in detail (e.g., chest pain when climbing stairs, started 2 days ago, feels like pressure...)"
-                          className="w-full min-h-[200px] p-5 text-base rounded-2xl border-2 border-slate-200 bg-white/80 backdrop-blur-sm placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 resize-none shadow-sm"
+                          className="w-full min-h-[200px] p-5 text-base rounded-2xl border-2 border-slate-200 bg-white/80 backdrop-blur-sm placeholder:text-slate-400  transition-all duration-200 resize-none shadow-sm"
                           maxLength={500}
                         />
                         <div className="absolute bottom-4 right-5 text-sm text-slate-400 bg-white/90 px-3 py-1 rounded-full backdrop-blur-sm">
@@ -111,7 +108,7 @@ const SymptomForm = () => {
                       <button
                         onClick={handleSubmit}
                         disabled={loading || !problem.trim()}
-                        className="w-full h-14 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-lg rounded-2xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none flex items-center justify-center"
+                        className="w-full h-14 bg-gradient-to-r text-gray-800 font-semibold text-lg flex items-center justify-center"
                       >
                         {loading ? (
                           <>
@@ -125,26 +122,6 @@ const SymptomForm = () => {
                           </>
                         )}
                       </button>
-                    </div>
-
-                    {/* Disclaimer */}
-                    <div className="pt-6 border-t border-slate-200">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-center gap-3">
-                          <div className="p-2 rounded-full bg-blue-50">
-                            <Shield className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <span className="text-sm font-semibold text-blue-700">
-                            Medical Information Protected
-                          </span>
-                        </div>
-                        <p className="text-sm text-slate-500 text-center leading-relaxed max-w-md mx-auto">
-                          This assessment is for informational purposes only and
-                          does not replace professional medical advice. For
-                          emergencies, call your local emergency number
-                          immediately.
-                        </p>
-                      </div>
                     </div>
                   </div>
                 </div>

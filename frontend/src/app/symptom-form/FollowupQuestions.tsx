@@ -90,31 +90,10 @@ const FollowUpQuestions = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 max-w-4xl">
-        {/* Progress indicator */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium text-slate-600">
-              Question {current + 1} of {questions.length}
-            </span>
-            <span className="text-sm font-medium text-slate-600">
-              {Math.round(((current + 1) / questions.length) * 100)}% Complete
-            </span>
-          </div>
-          <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500 ease-out"
-              style={{ width: `${((current + 1) / questions.length) * 100}%` }}
-            />
-          </div>
-        </div>
-
+    <div className="h-full">
+      <div className=" max-w-4xl">
         {/* Question Card */}
         <div className="relative mb-8">
-          {/* Glassmorphism background */}
-          <div className="absolute inset-0 bg-white/70 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl shadow-blue-500/10"></div>
-
           <div className="relative p-8 lg:p-10">
             <div className="space-y-8">
               <div className="space-y-6">
@@ -123,7 +102,7 @@ const FollowUpQuestions = () => {
                 </h2>
 
                 <textarea
-                  className="w-full min-h-[160px] p-5 text-base rounded-2xl border-2 border-slate-200 bg-white/80 backdrop-blur-sm placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 resize-none shadow-sm"
+                  className="w-full min-h-[160px] p-5 text-base rounded-2xl border-2 border-slate-200 bg-white/80 backdrop-blur-sm placeholder:text-slate-400 transition-all duration-200 resize-none shadow-sm"
                   value={answers[current] || ""}
                   onChange={handleChange}
                   placeholder="Please provide as much detail as possible..."
@@ -151,7 +130,7 @@ const FollowUpQuestions = () => {
                     className={`flex items-center gap-3 px-8 py-3 text-base font-semibold rounded-xl transition-all duration-200 transform ${
                       !answers[current]?.trim()
                         ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                        : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/25"
+                        : "bg-gradient-to-r bg-gray-800 text-white hover:shadow-lg hover:shadow-blue-500/25"
                     }`}
                     onClick={handleNext}
                     disabled={!answers[current]?.trim()}
