@@ -1,17 +1,16 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+
 import {
   Stethoscope,
   MapPin,
   Menu,
-  X,
   MessageCircle,
   Shield,
   Upload,
   Brain,
   ArrowRight,
-  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/Button";
@@ -19,8 +18,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const navItems = [
   {
-    label: "Diagnosis",
-    path: "/diagnosis",
+    label: "Home",
+    path: "/",
     icon: Brain,
   },
   {
@@ -29,30 +28,32 @@ const navItems = [
     icon: MessageCircle,
   },
   {
-    label: "Analysis",
+    label: "Quick Health Check",
     path: "/symptom-form",
     icon: Upload,
   },
   {
-    label: "Doctors",
+    label: "Near By Doctors",
     path: "/doctors",
     icon: MapPin,
   },
   {
-    label: "Resources",
+    label: "Prescription Scanning",
     path: "/resources",
+    icon: Shield,
+  },
+  {
+    label: "Upload & Hear AI Insight",
+    path: "/upload",
     icon: Shield,
   },
 ];
 
 const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [currentPath, setCurrentPath] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
 
-  useEffect(() => {
-    setCurrentPath(window.location.pathname);
-  }, []);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const router = useRouter();
 
@@ -80,7 +81,7 @@ const Navbar = () => {
             : "bg-white/90 backdrop-blur-sm"
         )}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div
@@ -97,21 +98,20 @@ const Navbar = () => {
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center space-x-8">
-              {navItems.map((item) => {
-                const isActive = currentPath === item.path;
-                return (
-                  <button
-                    key={item.path}
-                    onClick={() => handleNavigation(item.path)}
-                    className={cn(
-                      "text-sm cursor-pointer font-medium transition-colors hover:text-gray-900",
-                      isActive ? "text-gray-900" : "text-gray-600"
-                    )}
-                  >
-                    {item.label}
-                  </button>
-                );
-              })}
+              {navItems.map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => handleNavigation(item.path)}
+                  className={cn(
+                    "text-sm cursor-pointer font-medium transition-colors hover:text-gray-900 relative pb-1",
+                    pathname === item.path
+                      ? "text-gray-900 after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-gray-900 after:rounded-full"
+                      : "text-gray-600"
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
             </nav>
 
             {/* CTA Buttons */}
@@ -148,27 +148,22 @@ const Navbar = () => {
                   <span className="text-xl font-semibold">MediCore</span>
                 </div>
 
-                <div className="space-y-4 mb-8">
-                  {navItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = currentPath === item.path;
-                    return (
-                      <button
-                        key={item.path}
-                        onClick={() => handleNavigation(item.path)}
-                        className={cn(
-                          "w-full cursor-pointer flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors",
-                          isActive
-                            ? "bg-gray-100 text-gray-900"
-                            : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                        )}
-                      >
-                        <Icon className="w-5 h-5" />
-                        <span className="font-medium">{item.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                <nav className="hidden lg:flex items-center space-x-8">
+                  {navItems.map((item) => (
+                    <button
+                      key={item.path}
+                      onClick={() => handleNavigation(item.path)}
+                      className={cn(
+                        "text-sm cursor-pointer font-medium transition-colors hover:text-gray-900 relative pb-1",
+                        pathname === item.path
+                          ? "text-gray-900 after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-gray-900 after:rounded-full after:scale-x-100 after:transition-transform after:duration-300 after:origin-left"
+                          : "text-gray-600 after:scale-x-0 after:transition-transform after:duration-300 after:origin-left"
+                      )}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </nav>
 
                 <div className="space-y-3 pt-4 border-t">
                   <Button

@@ -29,7 +29,7 @@ const SymptomForm = () => {
     }
   };
   return (
-    <div className="mt-10 mb-20">
+    <div className="mt-12 mb-12">
       <div className="container mx-auto px-4 ">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-center justify-center max-w-7xl mx-auto">
           {/* Left Side - Hero Content */}
@@ -108,7 +108,7 @@ const SymptomForm = () => {
                       <button
                         onClick={handleSubmit}
                         disabled={loading || !problem.trim()}
-                        className="w-full h-14 bg-gradient-to-r text-gray-800 font-semibold text-lg flex items-center justify-center"
+                        className="w-full cursor-pointer h-14 bg-gradient-to-r text-gray-800 font-semibold text-lg flex items-center justify-center"
                       >
                         {loading ? (
                           <>
