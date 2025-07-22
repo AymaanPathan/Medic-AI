@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useRef, useEffect } from "react";
 import {
   Stethoscope,
@@ -9,6 +10,8 @@ import {
   Heart,
   Brain,
   Activity,
+  MessageCircle,
+  ArrowRight,
 } from "lucide-react";
 import { socket } from "@/utils/socketSetup";
 import { useDispatch, useSelector } from "react-redux";
@@ -25,7 +28,6 @@ import {
 } from "@/store/slices/chat.slice";
 import { getUsersInitialThreadId } from "@/store/slices/userSlice";
 import Sidebar from "../../components/SideBar";
-import { IMessage } from "@/types/interfaces";
 import { ChatMessage } from "@/models/chat";
 const MedicalChat = () => {
   const messages = useSelector((state: RootState) => state.chat.message);
@@ -148,130 +150,59 @@ const MedicalChat = () => {
 
   if (!sessionStarted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center relative overflow-hidden">
-        {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-emerald-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
-          <div
-            className="absolute top-40 right-20 w-72 h-72 bg-teal-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"
-            style={{ animationDelay: "2s" }}
-          ></div>
-          <div
-            className="absolute bottom-20 left-1/2 w-72 h-72 bg-green-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"
-            style={{ animationDelay: "4s" }}
-          ></div>
-        </div>
-
-        {/* Floating medical icons */}
-        <div className="absolute top-1/4 left-1/4 transform -translate-x-1/2 -translate-y-1/2">
-          <div
-            className="w-8 h-8 bg-emerald-500 rounded-xl flex items-center justify-center animate-bounce"
-            style={{ animationDelay: "1s" }}
-          >
-            <Heart className="w-4 h-4 text-white" />
-          </div>
-        </div>
-        <div className="absolute top-1/3 right-1/4 transform translate-x-1/2 -translate-y-1/2">
-          <div
-            className="w-8 h-8 bg-teal-500 rounded-xl flex items-center justify-center animate-bounce"
-            style={{ animationDelay: "2s" }}
-          >
-            <Brain className="w-4 h-4 text-white" />
-          </div>
-        </div>
-        <div className="absolute bottom-1/3 left-1/3 transform -translate-x-1/2 translate-y-1/2">
-          <div
-            className="w-8 h-8 bg-green-500 rounded-xl flex items-center justify-center animate-bounce"
-            style={{ animationDelay: "3s" }}
-          >
-            <Activity className="w-4 h-4 text-white" />
-          </div>
-        </div>
-
-        {/* Main content */}
-        <div className="relative z-10 text-center max-w-2xl mx-auto px-8">
-          {/* Logo/Brand */}
-          <div className="mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-3xl shadow-2xl mb-6 transform hover:scale-105 transition-all duration-300">
-              <Stethoscope className="w-10 h-10 text-white" />
-            </div>
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                MedAssist AI
-              </h1>
-              <Sparkles className="w-6 h-6 text-emerald-500 animate-pulse" />
-            </div>
-            <p className="text-xl text-gray-600 font-medium">
-              Your Intelligent Medical Companion
+      <div className="h-screen  bg-white flex items-center justify-center">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          {/* Main heading */}
+          <div className="mb-12">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight mb-6">
+              AI-powered medical
+              <br />
+              consultation platform
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Get instant medical insights and connect with healthcare
+              professionals through our intelligent platform.
             </p>
           </div>
 
-          {/* Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20">
-              <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mb-4 mx-auto">
-                <Shield className="w-6 h-6 text-emerald-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-2">
-                Secure & Private
-              </h3>
-              <p className="text-sm text-gray-600">
-                HIPAA compliant with end-to-end encryption
-              </p>
-            </div>
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20">
-              <div className="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center mb-4 mx-auto">
-                <Brain className="w-6 h-6 text-teal-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-2">AI-Powered</h3>
-              <p className="text-sm text-gray-600">
-                Advanced medical knowledge at your fingertips
-              </p>
-            </div>
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4 mx-auto">
-                <Clock className="w-6 h-6 text-green-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900 mb-2">
-                24/7 Available
-              </h3>
-              <p className="text-sm text-gray-600">
-                Instant medical guidance anytime, anywhere
-              </p>
-            </div>
-          </div>
-
-          {/* CTA Button */}
-          <div className="space-y-4">
+          {/* CTA */}
+          <div className="mb-16">
             <button
               onClick={handleStartSession}
-              className="group relative inline-flex items-center space-x-3 px-12 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-2xl font-semibold text-lg shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-emerald-500/25"
+              className="inline-flex cursor-pointer items-center px-8 py-3 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg transition-colors"
             >
-              <Play className="w-6 h-6 group-hover:scale-110 transition-transform duration-300" />
-              <span>Start Medical Consultation</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300 -z-10"></div>
+              Start consultation
+              <ArrowRight className="w-4 h-4 ml-2" />
             </button>
-            <p className="text-sm text-gray-500 max-w-md mx-auto">
-              Click to begin your personalized medical consultation. Remember,
-              this is for guidance only and not a substitute for professional
-              medical advice.
+            <p className="text-sm text-gray-500 mt-4">
+              Free to start • No credit card required
             </p>
           </div>
 
-          {/* Trust indicators */}
-          <div className="mt-12 flex items-center justify-center space-x-8 text-sm text-gray-500">
+          {/* Trust bar */}
+          <div className="flex items-center justify-center space-x-8 text-sm text-gray-500 border-t pt-8">
             <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
               <span>HIPAA Compliant</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
-              <span>Encrypted</span>
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+              <span>SOC 2 Certified</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>FDA Guidelines</span>
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+              <span>End-to-end Encrypted</span>
             </div>
+          </div>
+
+          {/* Disclaimer */}
+          <div className="mt-12 max-w-2xl mx-auto">
+            <p className="text-xs text-gray-400 leading-relaxed">
+              This platform provides informational content and AI-assisted
+              preliminary assessments. It is not intended to replace
+              professional medical advice, diagnosis, or treatment. Always
+              consult with qualified healthcare providers for medical decisions.
+            </p>
           </div>
         </div>
       </div>
@@ -280,7 +211,7 @@ const MedicalChat = () => {
 
   return (
     <div>
-      <div className="min-h-screen bg-white flex">
+      <div className="min-h-screen bg-white ">
         <div className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
           {/* Sidebar Content */}
           <div className="flex-auto h-screen overflow-y-scroll scrollbar-thin ">
