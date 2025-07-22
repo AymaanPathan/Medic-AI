@@ -27,5 +27,4 @@ qa_chain = (
     {"context": retriever, "question": RunnablePassthrough()}
     | prompt
     | llm.with_structured_output(OutPutState)
-    | StrOutputParser()
 )

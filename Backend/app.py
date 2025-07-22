@@ -29,7 +29,7 @@ fastapi_app.include_router(user_router)
 # ✅ Step 2: Add CORS to FastAPI
 fastapi_app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -102,7 +102,10 @@ async def generate_final_prompt(data: FinalPromptInput):
 
 @fastapi_app.post("/generate_diagnosis")
 async def getDiagnosis(data: DiagnosisInput):
+    print("Data :" , data)
+    print("final :" , data.finalPrompt)
     result = qa_chain.invoke(data.finalPrompt)
+    print("result",result)
     return result
    
 

@@ -33,7 +33,7 @@ async def create_new_thread(sid,data):
     if sid not in session_states:
         session_states[sid] = default_user_info.copy()
     session_states[sid]["thread_id"] = thread_id
-
+ 
     await sio.emit("thread_created", {"thread_id": thread_id}, to=sid)
 
 
