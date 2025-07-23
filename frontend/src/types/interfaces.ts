@@ -91,8 +91,9 @@ export type Diagnosis = {
 };
 
 export type IMessage = {
+  id: string;
   text: string;
-  message: string;
+  message: string | number;
   sender: string;
   time_stamp: Date;
 };

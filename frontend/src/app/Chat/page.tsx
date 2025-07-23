@@ -9,6 +9,9 @@ import {
   Bot,
   User,
   Zap,
+  X,
+  Menu,
+  MessageSquare,
 } from "lucide-react";
 import { socket } from "@/utils/socketSetup";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,6 +30,7 @@ import { getUsersInitialThreadId } from "@/store/slices/userSlice";
 import Sidebar from "../../components/SideBar";
 const MedicalChat = () => {
   const messages = useSelector((state: RootState) => state.chat.message);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [inputValue, setInputValue] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -57,13 +61,6 @@ const MedicalChat = () => {
     };
     getInitialThread();
   }, [dispatch]);
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   useEffect(() => {
     socket.on("trigger_sidebar_fetch", (msg: string) => {
@@ -126,7 +123,6 @@ const MedicalChat = () => {
 
     dispatch(getMessageForSideBar());
 
-    // ✅ Send proper structured payload
     socket.emit("start_stream_answer", {
       thread_id,
       message: messageToSend,
@@ -191,7 +187,6 @@ const MedicalChat = () => {
             </div>
           </div>
 
-          {/* Disclaimer */}
           <div className="mt-12 max-w-2xl mx-auto">
             <p className="text-xs text-gray-400 leading-relaxed">
               This platform provides informational content and AI-assisted
@@ -206,67 +201,79 @@ const MedicalChat = () => {
   }
 
   return (
-    <div className="flex items-start justify-start">
-      {/* Sidebar - Hidden on mobile, visible on tablet+ */}
-      <div className="hidden md:block w-64 lg:w-80 flex-shrink-0 h-[calc(100vh-4rem)]">
-        <Sidebar />
-      </div>
+    <div className="flex h-screen items-center justify-center bg-black">
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setSidebarOpen(false)}
+          />
+          <div className="relative w-80 h-full">
+            <Sidebar />
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="absolute top-4 right-4 p-1 text-neutral-400 hover:text-white transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col h-[calc(100vh-4rem)] min-w-0">
+      {/* Desktop Sidebar */}
+      <Sidebar />
+
+      <div className="flex flex-col h-screen flex-1">
+        {/* Header - Mobile only */}
+        <div className="md:hidden flex items-center justify-between p-4 border-b border-neutral-800">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-1 text-neutral-400 hover:text-white transition-colors"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 bg-white rounded-sm flex items-center justify-center">
+              <MessageSquare className="w-3 h-3 text-black" />
+            </div>
+            <h1 className="text-sm font-medium text-white">HealthAI</h1>
+          </div>
+          <div className="w-6" />
+        </div>
+
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto w-full p-2 sm:p-3 md:p-4">
-          <div className="mx-auto space-y-6 max-w-4xl">
+        <div className=" overflow-y-scroll h-screen  scrollbar-hidden">
+          <div className="max-w-5xl mx-auto   px-4 py-6 space-y-6">
             {messages.map((message, index) => (
-              <div key={index} className="flex items-start gap-3 w-full">
-                {/* Left side content for AI messages */}
-                {message.sender !== "User" && (
-                  <>
-                    {/* AI Avatar */}
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-primary">
-                      <Bot className="w-4 h-4 text-primary-foreground" />
+              <div key={index} className="group">
+                {message.sender !== "User" ? (
+                  <div className="flex items-start gap-3 max-w-3xl">
+                    <div className="w-6 h-6 bg-neutral-800 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <Bot className="w-3 h-3 text-neutral-400" />
                     </div>
 
-                    {/* AI Message Container */}
-                    <div className="flex-1 max-w-[75%]">
-                      <div className="bg-muted text-foreground px-4 py-3 rounded-2xl rounded-tl-md">
-                        <p className="text-xs leading-relaxed whitespace-pre-wrap break-words break-all">
-                          {message.text}
-                        </p>
-                      </div>
-                      <div className="mt-2 text-left">
-                        <span className="text-xs text-muted-foreground">
-                          {new Date().toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* Right side content for User messages */}
-                {message.sender === "User" && (
-                  <div className="flex items-start justify-end gap-3 w-full">
-                    {/* Message container with max-width */}
-                    <div className="flex-1 max-w-[75%] flex flex-col items-end">
-                      <div className="bg-primary text-primary-foreground px-4 py-3 rounded-2xl rounded-tr-md">
-                        <p className="text-xs leading-relaxed whitespace-pre-wrap break-words break-all">
-                          {message.text}
-                        </p>
-                      </div>
-                      <div className="mt-2 text-xs text-muted-foreground text-right">
+                    <div className=" px-4 py-2 rounded-lg text-sm text-neutral-200 leading-relaxed max-w-[75%] break-words whitespace-pre-wrap overflow-hidden">
+                      {message.text}
+                      <div className="text-xs text-neutral-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         {new Date().toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
                       </div>
                     </div>
+                  </div>
+                ) : (
+                  // User Message
+                  <div className="flex items-start gap-3 justify-end max-w-3xl ml-auto">
+                    {/* Message Bubble */}
+                    <div className="bg-neutral-800 px-4 py-2 rounded-lg text-sm text-white leading-relaxed max-w-[75%]  break-words whitespace-pre-wrap overflow-hidden">
+                      {message.text}
+                    </div>
 
-                    {/* User avatar */}
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-950">
-                      <User className="w-4 h-4 text-white" />
+                    {/* User Avatar */}
+                    <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <User className="w-3 h-3 text-black" />
                     </div>
                   </div>
                 )}
@@ -276,28 +283,23 @@ const MedicalChat = () => {
             {/* Typing indicator */}
             {isProcessing && (
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                  <Bot className="w-4 h-4 text-primary-foreground" />
+                <div className="w-6 h-6 bg-neutral-800 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <Bot className="w-3 h-3 text-neutral-400" />
                 </div>
-                <div className="flex-1 max-w-[75%]">
-                  <div className="bg-muted rounded-2xl rounded-tl-md px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-1">
-                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-                        <div
-                          className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                          style={{ animationDelay: "0.15s" }}
-                        ></div>
-                        <div
-                          className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                          style={{ animationDelay: "0.3s" }}
-                        ></div>
-                      </div>
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Sparkles className="w-3 h-3" />
-                        <span>Analyzing...</span>
-                      </span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 text-sm text-neutral-400">
+                    <div className="flex gap-1">
+                      <div className="w-1 h-1 bg-neutral-500 rounded-full animate-bounce"></div>
+                      <div
+                        className="w-1 h-1 bg-neutral-500 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.15s" }}
+                      ></div>
+                      <div
+                        className="w-1 h-1 bg-neutral-500 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.3s" }}
+                      ></div>
                     </div>
+                    <span>Thinking...</span>
                   </div>
                 </div>
               </div>
@@ -307,64 +309,50 @@ const MedicalChat = () => {
           </div>
         </div>
 
-        {/* Input Area - More compact */}
-        <div className="px-2 py-2 sm:px-3 sm:py-3 md:px-4 md:py-3 border-t bg-card/50">
+        {/* Input Area */}
+        <div className="border-t border-white/10 bg-black/50 backdrop-blur-xl p-6">
           <div className="max-w-4xl mx-auto">
-            {/* Input */}
-            <div className="relative">
-              <textarea
-                ref={inputRef}
-                value={inputValue}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                placeholder="Describe your symptoms or ask a health question..."
-                className="w-full px-3 py-2 pr-14 sm:pr-16 bg-background border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-ring text-sm placeholder:text-muted-foreground"
-                rows={window.innerWidth < 640 ? 1 : 2}
-                maxLength={1000}
-                disabled={isProcessing}
-              />
+            {/* Input Container */}
+            <div className="relative group">
+              <div className="absolute inset-0  rounded-xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500"></div>
 
-              {/* Character Count & Send Button */}
-              <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 flex items-center gap-2">
-                <span
-                  className={`text-xs transition-colors ${
-                    charCount > 800
-                      ? "text-yellow-600"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {charCount}/1000
-                </span>
-                <button
-                  onClick={sendMessage}
-                  disabled={!inputValue.trim() || isProcessing}
-                  className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 bg-primary hover:bg-primary/90 disabled:bg-muted disabled:cursor-not-allowed text-primary-foreground rounded-md transition-colors"
-                >
-                  {isProcessing ? (
-                    <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                  ) : (
-                    <Send className="w-3 h-3" />
-                  )}
-                </button>
-              </div>
-            </div>
+              <div className="relative bg-white/5 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl hover:border-white/20 focus-within:border-white/30 transition-all duration-300">
+                <textarea
+                  ref={inputRef}
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask MediCore anything about your health..."
+                  className="w-full px-4 py-4 pr-14 bg-transparent border-0 rounded-xl resize-none focus:outline-none text-sm placeholder:text-gray-400 text-white transition-all duration-200 placeholder:transition-colors focus:placeholder:text-gray-500"
+                  rows={1}
+                  maxLength={1000}
+                  disabled={isProcessing}
+                  style={{
+                    minHeight: "52px",
+                    maxHeight: "140px",
+                  }}
+                  onInput={(e) => {
+                    const textarea = e.target as HTMLTextAreaElement;
+                    textarea.style.height = "auto";
+                    textarea.style.height =
+                      Math.min(textarea.scrollHeight, 140) + "px";
+                  }}
+                />
 
-            {/* Security Features - More compact */}
-            <div className="flex items-center justify-between mt-1.5 sm:mt-2 text-xs text-muted-foreground">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="flex items-center gap-1">
-                  <Shield className="w-3 h-3 text-green-600" />
-                  <span className="hidden xs:inline">Encrypted</span>
-                  <span className="xs:hidden">Secure</span>
+                {/* Send Button */}
+                <div className="absolute bottom-3 right-3">
+                  <button
+                    onClick={sendMessage}
+                    disabled={!inputValue.trim() || isProcessing}
+                    className="flex items-center justify-center w-9 h-9 text-white   disabled:bg-white/20 disabled:cursor-not-allowed cursor-pointer disabled:text-gray-500 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 disabled:hover:scale-100 group/btn"
+                  >
+                    {isProcessing ? (
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Zap className="w-3 h-3 text-blue-600" />
-                  <span>AI-powered</span>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="hidden sm:inline">Medical AI Assistant</span>
-                <span className="sm:hidden">Medical AI</span>
               </div>
             </div>
           </div>
