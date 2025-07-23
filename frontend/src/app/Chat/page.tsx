@@ -215,63 +215,74 @@ const MedicalChat = () => {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col h-[calc(100vh-4rem)] min-w-0">
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
-          <div className="mx-auto space-y-4 sm:space-y-6 max-w-full">
+        <div className="flex-1 overflow-y-auto w-full p-2 sm:p-3 md:p-4">
+          <div className="mx-auto space-y-6 max-w-4xl">
             {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex items-start space-x-2 sm:space-x-3 ${
-                  message.sender === "User"
-                    ? "flex-row-reverse space-x-reverse"
-                    : ""
-                }`}
-              >
-                {/* Message Bubble */}
-                <div
-                  className={`flex-1 max-w-[85%] sm:max-w-2xl ${
-                    message.sender === "User" ? "text-right" : "text-left"
-                  }`}
-                >
-                  <div
-                    className={`inline-block px-3 py-2 sm:px-4 sm:py-3 rounded-lg ${
-                      message.sender === "User"
-                        ? "bg-gray-800 text-primary-foreground"
-                        : "bg-white"
-                    }`}
-                  >
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                      {message.text}
-                    </p>
-                  </div>
+              <div key={index} className="flex items-start gap-3 w-full">
+                {/* Left side content for AI messages */}
+                {message.sender !== "User" && (
+                  <>
+                    {/* AI Avatar */}
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-primary">
+                      <Bot className="w-4 h-4 text-primary-foreground" />
+                    </div>
 
-                  {/* Timestamp */}
-                  <div
-                    className={`flex items-center space-x-1 mt-1 sm:mt-2 text-xs text-muted-foreground ${
-                      message.sender === "User"
-                        ? "justify-end"
-                        : "justify-start"
-                    }`}
-                  >
-                    <Clock className="w-3 h-3" />
-                    <span>
-                      {typeof message.time_stamp === "string"
-                        ? message.time_stamp
-                        : message.time_stamp?.toLocaleString()}
-                    </span>
+                    {/* AI Message Container */}
+                    <div className="flex-1 max-w-[75%]">
+                      <div className="bg-muted text-foreground px-4 py-3 rounded-2xl rounded-tl-md">
+                        <p className="text-xs leading-relaxed whitespace-pre-wrap break-words break-all">
+                          {message.text}
+                        </p>
+                      </div>
+                      <div className="mt-2 text-left">
+                        <span className="text-xs text-muted-foreground">
+                          {new Date().toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Right side content for User messages */}
+                {message.sender === "User" && (
+                  <div className="flex items-start justify-end gap-3 w-full">
+                    {/* Message container with max-width */}
+                    <div className="flex-1 max-w-[75%] flex flex-col items-end">
+                      <div className="bg-primary text-primary-foreground px-4 py-3 rounded-2xl rounded-tr-md">
+                        <p className="text-xs leading-relaxed whitespace-pre-wrap break-words break-all">
+                          {message.text}
+                        </p>
+                      </div>
+                      <div className="mt-2 text-xs text-muted-foreground text-right">
+                        {new Date().toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
+                    </div>
+
+                    {/* User avatar */}
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-950">
+                      <User className="w-4 h-4 text-white" />
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             ))}
 
+            {/* Typing indicator */}
             {isProcessing && (
-              <div className="flex items-start space-x-2 sm:space-x-3">
-                <div className="flex items-start space-x-2 sm:space-x-3">
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-primary rounded-full flex items-center justify-center">
-                    <Bot className="w-3 h-3 sm:w-4 sm:h-4 text-primary-foreground" />
-                  </div>
-                  <div className="bg-muted rounded-lg px-3 py-2 sm:px-4 sm:py-3">
-                    <div className="flex items-center space-x-2 sm:space-x-3">
-                      <div className="flex space-x-1">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-4 h-4 text-primary-foreground" />
+                </div>
+                <div className="flex-1 max-w-[75%]">
+                  <div className="bg-muted rounded-2xl rounded-tl-md px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-1">
                         <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
                         <div
                           className="w-2 h-2 bg-primary rounded-full animate-bounce"
@@ -282,7 +293,7 @@ const MedicalChat = () => {
                           style={{ animationDelay: "0.3s" }}
                         ></div>
                       </div>
-                      <span className="text-sm text-muted-foreground flex items-center space-x-1">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
                         <Sparkles className="w-3 h-3" />
                         <span>Analyzing...</span>
                       </span>
@@ -296,8 +307,8 @@ const MedicalChat = () => {
           </div>
         </div>
 
-        {/* Input Area */}
-        <div className="px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-4 border-t bg-card/50">
+        {/* Input Area - More compact */}
+        <div className="px-2 py-2 sm:px-3 sm:py-3 md:px-4 md:py-3 border-t bg-card/50">
           <div className="max-w-4xl mx-auto">
             {/* Input */}
             <div className="relative">
@@ -307,14 +318,14 @@ const MedicalChat = () => {
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder="Describe your symptoms or ask a health question..."
-                className="w-full px-3 py-2 pr-16 sm:px-4 sm:py-3 sm:pr-20 bg-background border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-ring text-sm placeholder:text-muted-foreground"
-                rows={window.innerWidth < 640 ? 2 : 3}
+                className="w-full px-3 py-2 pr-14 sm:pr-16 bg-background border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-ring text-sm placeholder:text-muted-foreground"
+                rows={window.innerWidth < 640 ? 1 : 2}
                 maxLength={1000}
                 disabled={isProcessing}
               />
 
               {/* Character Count & Send Button */}
-              <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 flex items-center space-x-2 sm:space-x-3">
+              <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 flex items-center gap-2">
                 <span
                   className={`text-xs transition-colors ${
                     charCount > 800
@@ -327,26 +338,26 @@ const MedicalChat = () => {
                 <button
                   onClick={sendMessage}
                   disabled={!inputValue.trim() || isProcessing}
-                  className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-primary hover:bg-primary/90 disabled:bg-muted disabled:cursor-not-allowed text-primary-foreground rounded-md transition-colors"
+                  className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 bg-primary hover:bg-primary/90 disabled:bg-muted disabled:cursor-not-allowed text-primary-foreground rounded-md transition-colors"
                 >
                   {isProcessing ? (
-                    <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                   ) : (
-                    <Send className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <Send className="w-3 h-3" />
                   )}
                 </button>
               </div>
             </div>
 
-            {/* Security Features */}
-            <div className="flex items-center justify-between mt-2 sm:mt-3 text-xs text-muted-foreground">
-              <div className="flex items-center space-x-3 sm:space-x-4">
-                <div className="flex items-center space-x-1.5">
+            {/* Security Features - More compact */}
+            <div className="flex items-center justify-between mt-1.5 sm:mt-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-1">
                   <Shield className="w-3 h-3 text-green-600" />
                   <span className="hidden xs:inline">Encrypted</span>
                   <span className="xs:hidden">Secure</span>
                 </div>
-                <div className="flex items-center space-x-1.5">
+                <div className="flex items-center gap-1">
                   <Zap className="w-3 h-3 text-blue-600" />
                   <span>AI-powered</span>
                 </div>
