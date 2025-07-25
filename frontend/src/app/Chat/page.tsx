@@ -445,9 +445,9 @@ const MedicalChat = () => {
         </div>
 
         {/* Fixed Input Area at Bottom */}
-        <div className="fixed bottom-0 left-0 right-0 z-40  p-6 md:left-44">
-          <div className="max-w-4xl mx-auto">
-            <div className="relative">
+        <div className="fixed bottom-0 left-0 right-0 z-40   p-6 md:left-44">
+          <div className="max-w-4xl mx-auto ">
+            <div className="relative ">
               <div className="absolute rounded-xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500"></div>
 
               <div className="backdrop-blur-md border-2 border-white rounded-xl shadow-2xl hover:border-white/20 focus-within:border-white/30 transition-all duration-300">
