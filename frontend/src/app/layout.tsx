@@ -25,10 +25,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-full">
       <body
         suppressHydrationWarning={true}
-        className={`${geistSans.variable} ${geistMono.variable}`}
+        className={`h-full overflow-hidden ${geistSans.variable} ${geistMono.variable}`}
       >
         <Navbar />
         <ReduxProvider>{children}</ReduxProvider>
