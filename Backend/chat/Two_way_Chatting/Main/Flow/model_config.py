@@ -1,4 +1,7 @@
 from langchain_groq import ChatGroq
+from langchain.chains import RetrievalQA
+from langchain_community.vectorstores import FAISS
+from langchain_huggingface import HuggingFaceEmbeddings
 import os
 
 
@@ -8,3 +11,15 @@ def llm_config():
 
 
 load_llm = llm_config()
+
+
+DB_FAISS_PATH = "../../../vectorstore/db_faiss"
+vectorstore = FAISS.load_local(DB_FAISS_PATH, HuggingFaceEmbeddings(),  allow_dangerous_deserialization=True)
+retriever = vectorstore.as_retriever(search_type="similarity", k=3)
+
+two_way_chatting_qa_chain = RetrievalQA.from_chain_type(
+    llm=load_llm,
+    retriever=retriever,
+    return_source_documents=True,
+    chain_type="stuff"
+)
