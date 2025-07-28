@@ -1,21 +1,20 @@
 "use client";
 import React, { useState } from "react";
 import { Mail, ArrowRight, Sparkles } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { RootDispatch } from "@/store";
+import { sendOtpToLogin } from "@/store/slices/auth.slice";
 
 const Login: React.FC = () => {
+  const dispatch: RootDispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<"email" | "verify">("email");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      setStep("verify");
-    }, 2000);
+    await dispatch(sendOtpToLogin(email));
   };
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
@@ -76,7 +75,7 @@ const Login: React.FC = () => {
               </div>
 
               <button
-                onClick={handleSubmit}
+                onClick={handleSendOtp}
                 disabled={isLoading || !email}
                 className="w-full bg-white text-black font-medium py-3 px-4 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center group"
               >
