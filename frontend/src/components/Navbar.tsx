@@ -123,13 +123,7 @@ const Navbar = () => {
             {/* CTA Buttons */}
             <div className="hidden lg:flex items-center space-x-3">
               <Button
-                variant="ghost"
-                size="sm"
-                className="text-gray-300 hover:text-white hover:bg-white/10 border-0 transition-all duration-200"
-              >
-                Sign in
-              </Button>
-              <Button
+                onClick={() => handleNavigation("/login")}
                 size="sm"
                 className="bg-white text-black hover:bg-gray-100 font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
               >
@@ -185,19 +179,9 @@ const Navbar = () => {
 
                 <div className="space-y-3 pt-6 mt-6 border-t border-white/10">
                   <Button
-                    variant="ghost"
-                    className="w-full justify-start text-gray-300 hover:text-white hover:bg-white/10 border-0"
-                    onClick={() => {
-                      handleNavigation("/signin");
-                      setIsOpen(false);
-                    }}
-                  >
-                    Sign in
-                  </Button>
-                  <Button
                     className="w-full bg-white text-black hover:bg-gray-100 font-medium shadow-lg"
                     onClick={() => {
-                      handleNavigation("/signup");
+                      handleNavigation("/login");
                       setIsOpen(false);
                     }}
                   >
