@@ -3,7 +3,7 @@ import asyncio
 import logging
 from fastapi.routing import APIRouter
 from langchain_core.messages import HumanMessage
-from Backend.chat.Two_way_Chatting.Main.Flow.chat_graph import graph
+from Backend.chat.Two_way_Chatting.Main.Flow.chat_graph import enhanced_graph
 from Backend.socket_config import sio
 from Backend.tables.add_Chat_tables import chat_messages,chat_thread
 from Backend.tables.add_Chat_tables import engine
@@ -102,7 +102,7 @@ async def websocket_stream(sid, data):
                 await sio.emit("trigger_sidebar_fetch", {"thread_id": thread_id}, to=sid)
 
             # ✅ Process via LangGraph
-            result = await graph.ainvoke(
+            result = await enhanced_graph.ainvoke(
                 session_states[sid],
                 config={"configurable": {"thread_id": thread_id}}
             )

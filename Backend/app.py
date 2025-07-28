@@ -13,6 +13,7 @@ from Backend.chat.One_Way_Chatting.get_more_question_chain import generate_more_
 from Backend.chat.One_Way_Chatting.qa_chain import qa_chain
 from fastapi.middleware.cors import CORSMiddleware
 from Backend.chat.Two_way_Chatting.Main.api.api_server import router as stream_router  
+from Backend.routes.auth.auth_router import router as authRouter  
 from Backend.socket_config import sio,allowed_origins
 from fastapi import UploadFile, File
 import base64
@@ -26,6 +27,7 @@ fastapi_app.include_router(stream_router)
 fastapi_app.include_router(chat_router)
 fastapi_app.include_router(thread_router)
 fastapi_app.include_router(user_router)
+fastapi_app.include_router(authRouter)
 # ✅ Step 2: Add CORS to FastAPI
 fastapi_app.add_middleware(
     CORSMiddleware,
