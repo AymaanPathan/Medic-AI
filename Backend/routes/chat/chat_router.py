@@ -1,6 +1,6 @@
 from fastapi import APIRouter,Query
-from Backend.utils.engine import engine
-from Backend.tables.chat_messages_table import chat_messages
+from utils.engine import engine
+from tables.chat_messages_table import chat_messages
 from sqlalchemy import label, select
 from sqlalchemy import func
 router = APIRouter(prefix="/chats",tags=["chats"])

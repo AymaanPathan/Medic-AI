@@ -1,6 +1,6 @@
 from sqlalchemy import Boolean, DateTime, ForeignKey, Table,Column,Integer,String, Text, func, insert, select
 from sqlalchemy.exc import IntegrityError
-from Backend.utils.engine import meta
+from utils.engine import meta
 
 chat_thread = Table(
     "chat_thread",

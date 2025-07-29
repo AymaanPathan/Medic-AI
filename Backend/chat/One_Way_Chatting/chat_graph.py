@@ -1,8 +1,8 @@
 from langgraph.graph import StateGraph, END
-from Backend.chat.One_Way_Chatting.chat_state import ChatState
+from chat.One_Way_Chatting.chat_state import ChatState
 from langgraph.types import Command
-from Backend.chat.One_Way_Chatting.qa_chain import qa_chain
-from Backend.chat.One_Way_Chatting.get_more_question_chain import generate_more_question_chain
+from chat.One_Way_Chatting.qa_chain import qa_chain
+from chat.One_Way_Chatting.get_more_question_chain import generate_more_question_chain
 
 graph = StateGraph(ChatState)
 

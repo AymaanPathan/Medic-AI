@@ -1,5 +1,5 @@
 from sqlalchemy import Table,Column,Integer,String,DateTime,func,ForeignKey,Enum
-from Backend.utils.engine import meta
+from utils.engine import meta
 
 
 message_type_enum= Enum("A.I","User",name="message_type", create_type=True)

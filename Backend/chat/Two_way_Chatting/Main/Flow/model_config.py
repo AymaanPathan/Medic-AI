@@ -1,8 +1,10 @@
+import os
 from langchain_groq import ChatGroq
 from langchain.chains import RetrievalQA
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
-import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
 def llm_config():

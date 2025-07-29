@@ -3,11 +3,11 @@ import asyncio
 import logging
 from fastapi.routing import APIRouter
 from langchain_core.messages import HumanMessage
-from Backend.chat.Two_way_Chatting.Main.Flow.chat_graph import enhanced_graph
-from Backend.socket_config import sio
-from Backend.tables.chat_messages_table import chat_messages
-from Backend.tables.chat_thread_table import chat_thread
-from Backend.utils.engine import engine
+from chat.Two_way_Chatting.Main.Flow.chat_graph import enhanced_graph
+from socket_config import sio
+from tables.chat_messages_table import chat_messages
+from tables.chat_thread_table import chat_thread
+from utils.engine import engine
 router = APIRouter()
 from datetime import datetime
 
