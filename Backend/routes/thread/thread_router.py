@@ -1,6 +1,7 @@
 from fastapi import APIRouter
-from Backend.tables.add_Chat_tables import engine
-from Backend.tables.add_Chat_tables import chat_messages,chat_thread
+from Backend.utils.engine import engine
+from Backend.tables.chat_thread_table import chat_thread
+from Backend.tables.chat_messages_table import chat_messages
 from datetime import datetime
 from sqlalchemy import select,asc
 router = APIRouter(prefix="/threads",tags=["threads"])

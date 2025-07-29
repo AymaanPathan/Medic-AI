@@ -5,8 +5,9 @@ from fastapi.routing import APIRouter
 from langchain_core.messages import HumanMessage
 from Backend.chat.Two_way_Chatting.Main.Flow.chat_graph import enhanced_graph
 from Backend.socket_config import sio
-from Backend.tables.add_Chat_tables import chat_messages,chat_thread
-from Backend.tables.add_Chat_tables import engine
+from Backend.tables.chat_messages_table import chat_messages
+from Backend.tables.chat_thread_table import chat_thread
+from Backend.utils.engine import engine
 router = APIRouter()
 from datetime import datetime
 

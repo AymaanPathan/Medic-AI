@@ -38,7 +38,7 @@ async def request_login(data: LoginRequest):
             "subject": "Your OTP",
             "html": f"<strong>Your OTP is: {otp}</strong>",
         })
-        print(email)
+        print("email send",email)
 
     except Exception as e:
         print(e)

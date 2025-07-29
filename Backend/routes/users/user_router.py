@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from sqlalchemy import select
-from Backend.tables.add_user_table import user_table
-from Backend.tables.add_Chat_tables import engine
+from Backend.tables.user_table import user_table
+from Backend.utils.engine import engine
 
 
 router = APIRouter(prefix="/users",tags=["Users"])
